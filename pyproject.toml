@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "midjournal-app"
+version = "0.1.0"
+description = "Personalized RAG-powered Journal"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+fastapi = "^0.115.14"
+uvicorn = "^0.35.0"
+pydantic = "^2.11.7"
+langchain = "^0.3.26"
+qdrant-client = "^1.14.3"
+psycopg2-binary = "^2.9.10"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+black = "^24.4.2"
+isort = "^5.13.2"
+flake8 = "^7.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -47,13 +47,22 @@
 - **Task 0.4.1: Finalize Initial Open-Source Selections & Justify**
   - [x] Create `docs/tech_stack_decisions.md`.
 - **Task 0.4.2: Set up Core Development Environment**
-  - [ ] Initialize Poetry project.
-  - [ ] Add core dependencies.
-  - [ ] Create `src/api/Dockerfile`.
-  - [ ] Create `docker-compose.yml`.
-  - [ ] Create `docs/development/local_setup.md`.
-- **Task 0.4.3: Initialize Infrastructure as Code (IaC) Framework**
-  - [ ] Create `infra/` directory.
-  - [ ] Initialize Terraform project.
-  - [ ] Create `infra/main.tf` with minimal AWS resources.
-  - [ ] Create `docs/devops/iac_guide.md`.
+  - [x] Initialize Poetry project.
+  - [x] Add core dependencies.
+  - [x] Create `src/api/Dockerfile`.
+  - [x] Create `docker-compose.yml`.
+  - [x] Create `docs/development/local_setup.md`.
+- **Task 0.4.3: Initialize Infrastructure as Code (IaC) Framework (Switched to Pulumi)**
+  - [x] Create `infra/` directory.
+  - [x] Initialize Pulumi project.
+  - [x] Create `infra/__main__.py` with minimal AWS resources.
+  - [x] Create `docs/devops/iac_guide.md`.
+
+### 0.5 DevOps & CI/CD Strategy
+
+- **Task 0.5.1: Plan Automated Testing Strategy**
+  - [x] Create `tests/` directory structure.
+  - [x] Create `docs/devops/testing_strategy.md`.
+- **Task 0.5.2: Define Environments and CI/CD Pipeline Stages**
+  - [x] Create `docs/devops/ci_cd_strategy.md`.
+  - [x] Create `.github/workflows/ci.yml`.

@@ -1,0 +1,11 @@
+name: midjournal-infra
+description: Infrastructure for MidJournal App
+runtime:
+  name: python
+  options:
+    toolchain: pip
+    virtualenv: venv
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-python
