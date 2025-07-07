@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from src.api.routers import auth
+from src.api.routers import auth, ingestion
 from src.db.database import create_tables
 
 
@@ -19,6 +19,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="MidJournal API", lifespan=lifespan)
 
 app.include_router(auth.router)
+app.include_router(ingestion.router)
 
 
 @app.get("/")
