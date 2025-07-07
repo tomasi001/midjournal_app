@@ -1,0 +1,40 @@
+@startuml
+!theme plain
+
+title Detailed Data Flow: Query
+
+actor User
+
+box "Frontend"
+  participant "Web/Mobile App" as App
+end box
+
+box "Backend Infrastructure"
+  participant "API Gateway" as APIGW
+  participant "Query Service" as QS
+  database "Vector DB (Qdrant)" as VDB
+  participant "LLM Service" as LLM
+end box
+
+
+User -> App: 1. Asks question in chat
+App -> APIGW: 2. HTTPS POST /chat (sends question & user token)
+
+APIGW -> QS: 3. Forwards request to Query Service
+
+QS -> VDB: 4. Searches for relevant text chunks\n**Filter by user_id is MANDATORY**
+VDB --> QS: 5. Returns top-k relevant chunks
+
+QS -> LLM: 6. Sends prompt + retrieved chunks (context)
+note right of QS
+  The prompt instructs the LLM
+  to answer based *only* on the
+  provided context.
+end note
+
+LLM --> QS: 7. Returns generated answer
+
+QS --> App: 8. Sends final response
+App -> User: 9. Displays answer in chat UI
+
+@enduml 

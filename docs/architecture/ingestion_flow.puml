@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+
+title Detailed Data Flow: Ingestion
+
+actor User
+
+box "Frontend"
+  participant "Web/Mobile App" as App
+end box
+
+box "Backend Infrastructure"
+  participant "API Gateway" as APIGW
+  participant "Ingestion Endpoint" as IngestAPI
+  queue "Message Queue" as MQ
+  participant "Processing Service" as Processor
+  database "Vector DB (Qdrant)" as VDB
+  database "Relational DB (Postgres)" as RDB
+end box
+
+User -> App: 1. Inputs text, voice, or bulk files
+App -> APIGW: 2. HTTPS POST /ingest (with user_id in token)
+
+APIGW -> IngestAPI: 3. Forwards request
+
+group Async Processing
+  IngestAPI -> MQ: 4. Publishes job to queue (e.g., {user_id, content, source_type})
+  MQ -> Processor: 5. Worker consumes job
+  Processor -> Processor: 6. Parse & Chunk Text
+  Processor -> VDB: 7. Embed & Store Chunks\n(Payload includes user_id)
+  Processor -> RDB: 8. Store Metadata\n(e.g., document status)
+end
+
+IngestAPI --> App: 2.1. Returns "Accepted" (202)
+Processor --> User: (Optional) 9. Notify on completion/failure
+
+@enduml 

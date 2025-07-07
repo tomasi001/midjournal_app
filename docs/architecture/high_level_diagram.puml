@@ -1,0 +1,56 @@
+@startuml
+!theme plain
+
+title High-Level System Architecture
+
+package "User Client" {
+  [Web/Mobile App]
+}
+
+package "Cloud Infrastructure (AWS)" {
+
+  [API Gateway] as APIGW
+
+  package "Application Services" {
+    [Authentication Service] as Auth
+    [Ingestion Service]
+    [Query Service]
+    [Image Generation Service]
+  }
+
+  package "Data & Messaging" {
+    [Message Queue (SQS/RabbitMQ)] as MQ
+    [Relational DB (PostgreSQL)] as RDB
+    [Vector DB (Qdrant)] as VDB
+  }
+
+  package "External AI Services" {
+    [LLM Service (Self-hosted Llama/OpenAI)] as LLM
+    [Image Model (Stable Diffusion/DALL-E)] as ImgModel
+  }
+}
+
+' Relationships
+[Web/Mobile App] --> APIGW : HTTPS Requests
+
+APIGW --> [Authentication Service] : /login, /register
+APIGW --> [Ingestion Service] : /ingest (text, voice, bulk)
+APIGW --> [Query Service] : /chat, /insights
+APIGW --> [Image Generation Service] : /generate-image (triggered internally)
+
+[Ingestion Service] --> MQ : Enqueues processing jobs
+MQ --> [Ingestion Service] : (Worker process consumes jobs)
+[Ingestion Service] --> RDB : Stores metadata (docs, entries)
+[Ingestion Service] --> VDB : Stores text chunks & vectors
+
+[Query Service] --> VDB : Retrieves relevant chunks (with user_id filter)
+[Query Service] --> LLM : Generates response from context
+[Query Service] --> RDB : Reads user metadata
+
+[Image Generation Service] --> LLM : Generates prompt from journal analysis
+[Image Generation Service] --> ImgModel : Creates image from prompt
+[Image Generation Service] --> RDB : Stores image URL
+
+Auth ..> RDB : Manages user credentials
+
+@enduml 
