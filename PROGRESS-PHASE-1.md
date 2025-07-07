@@ -25,11 +25,11 @@ This file tracks the progress for implementing the core features of the MidJourn
   - [x] Create `src/message_queue/` and implement `MessageQueueClient`.
   - [x] Implement `publish` method.
   - [x] Implement `subscribe` method.
-- [ ] **Task 1.2.2: Develop Text Processing Service (Chunking & Embeddings)**
-  - [ ] Create `src/text_processing/` module.
-  - [ ] Implement `TextSplitter` in `src/text_processing/chunking.py`.
-  - [ ] Implement `EmbeddingService` in `src/text_processing/embedding.py`.
-  - [ ] Create orchestration service in `src/text_processing/service.py`.
+- [x] **Task 1.2.2: Develop Text Processing Service (Chunking & Embeddings)**
+  - [x] Create `src/text_processing/` module.
+  - [x] Implement `TextSplitter` in `src/text_processing/chunking.py`.
+  - [x] Implement `EmbeddingService` in `src/text_processing/embedding.py`.
+  - [x] Create orchestration service in `src/text_processing/service.py`.
 - [ ] **Task 1.2.3: Implement Document Ingestion Service (API Endpoint & Consumer)**
   - [ ] Create `src/ingestion/` module and `DocumentIngestionService`.
   - [ ] Implement `POST /ingest/text` endpoint.
