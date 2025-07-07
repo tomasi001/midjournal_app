@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from src.auth.service import ConcreteAuthenticationService
 from src.data_models.schemas import User, UserCreate, Token
-from src.api.dependencies.auth import get_current_active_user
+from src.api.dependencies.auth import get_current_user
 from src.db.database import get_db
 
 router = APIRouter(
@@ -35,8 +35,8 @@ def login_for_access_token(
 
 
 @router.get("/me", response_model=User)
-def read_users_me(current_user: User = Depends(get_current_active_user)):
+def read_users_me(current_user: User = Depends(get_current_user)):
     """
-    Get the current authenticated user.
+    Returns the current authenticated user's details.
     """
     return current_user

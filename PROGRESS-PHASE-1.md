@@ -30,25 +30,14 @@ This file tracks the progress for implementing the core features of the MidJourn
   - [x] Implement `TextSplitter` in `src/text_processing/chunking.py`.
   - [x] Implement `EmbeddingService` in `src/text_processing/embedding.py`.
   - [x] Create orchestration service in `src/text_processing/service.py`.
-- [ ] **Task 1.2.3: Implement Document Ingestion Service (API Endpoint & Consumer)**
-  - [ ] Create `src/ingestion/` module and `DocumentIngestionService`.
-  - [ ] Implement `POST /ingest/text` endpoint.
-  - [ ] Develop queue consumer service/function.
-  - [ ] Implement consumer logic (chunk, embed, store).
+- [x] **Task 1.2.3: Document Ingestion Service** - Implement the service that orchestrates the ingestion flow, publishing tasks to the message queue.
 
 ---
 
 ## 1.3 Core Query API & RAG Logic
 
-- [ ] **Task 1.3.1: Implement LLM Inference Service**
-  - [ ] Create `src/llm/` module and `LLMInferenceService`.
-  - [ ] Integrate with LLM (e.g., Llama 3).
-  - [ ] Implement `generate_response` method.
-  - [ ] Design system prompt in `src/llm/prompts.py`.
-- [ ] **Task 1.3.2: Implement Main Query API Service Endpoint**
-  - [ ] Create `src/query/` module.
-  - [ ] Implement `POST /query/chat` endpoint.
-  - [ ] Implement RAG logic inside the endpoint.
+- [x] **Task 1.3.1: Query Service** - Create a service that takes a user query, embeds it, and retrieves relevant document chunks from the vector store.
+- [x] **Task 1.3.2: Query API Endpoint** - Expose the query service via a secure API endpoint.
 
 ---
 

@@ -2,15 +2,15 @@ import uuid
 import json
 
 from src.interfaces.document_ingestion_service import DocumentIngestionService
-from src.message_queue.client import RabbitMQClient
+from src.interfaces.message_queue_client import MessageQueueClient
 
 
-class ConcreteDocumentIngestionService(DocumentIngestionService):
+class DocumentIngestionServiceImpl(DocumentIngestionService):
 
     INGESTION_QUEUE_NAME = "ingestion-queue"
 
-    def __init__(self):
-        self._mq_client = RabbitMQClient()
+    def __init__(self, message_queue_client: MessageQueueClient):
+        self._mq_client = message_queue_client
 
     def ingest_text(self, user_id: uuid.UUID, text: str):
         """
@@ -25,8 +25,3 @@ class ConcreteDocumentIngestionService(DocumentIngestionService):
         print(
             f"Published ingestion task for user {user_id} to queue '{self.INGESTION_QUEUE_NAME}'"
         )
-
-    def __del__(self):
-        # Ensure the connection is closed when the service is destroyed
-        if self._mq_client:
-            self._mq_client.close()
