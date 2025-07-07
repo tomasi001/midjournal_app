@@ -1,70 +1,63 @@
 # Local Development Setup
 
-This guide provides step-by-step instructions to set up and run the MidJournal application locally for development.
+This guide provides instructions for setting up the local development environment for the MidJournal application.
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/get-started) and Docker Compose
-- [Poetry](https://python-poetry.org/docs/#installation) for Python package management
-- Git
+- Python 3.9+
+- Poetry
+- Docker and Docker Compose
 
-## Setup Instructions
+## Installation
 
-1.  **Clone the Repository:**
+1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/tomasi001/midjournal_app.git
+    git clone <repository-url>
     cd midjournal_app
     ```
 
-2.  **Install Python Dependencies:**
-    If you want to have the dependencies available on your host machine for IDE integration (e.g., for VS Code's IntelliSense), run:
-
+2.  **Install Python dependencies:**
     ```bash
     poetry install
     ```
 
-    _Note: The application runs inside Docker, so this step is primarily for local development tooling and is not strictly required to run the app._
+## Running the Application
 
-3.  **Build and Run the Services:**
-    This command will build the backend Docker image and start all the services defined in `docker-compose.yml` (backend, PostgreSQL, Qdrant, RabbitMQ).
+To run the full application stack locally, you will use Docker Compose. This will start the backend FastAPI server, the PostgreSQL database, Qdrant, and RabbitMQ.
 
-    ```bash
-    docker compose up --build
-    ```
-
-    The `--build` flag ensures the Docker image is rebuilt if there are changes to the `Dockerfile` or the source code it depends on.
-
-4.  **Verify the Application is Running:**
-    Once the services are up, you can check if the API is running by navigating to [http://localhost:8000](http://localhost:8000) in your browser or using `curl`. You should see:
-
-    ```json
-    {
-      "message": "Welcome to the MidJournal API!"
-    }
-    ```
-
-    You can also check the health endpoint:
+1.  **Start all services:**
+    From the root of the project directory, run:
 
     ```bash
-    curl http://localhost:8000/health
+    docker-compose up -d
     ```
 
-    This should return `{"status":"ok"}`.
+2.  **Verify the services:**
+    You can check the status of the running containers with:
 
-5.  **Accessing Services:**
-
-    - **API Docs (Swagger UI):** [http://localhost:8000/docs](http://localhost:8000/docs)
-    - **PostgreSQL:** Connect with a client on `localhost:5432` (user: `user`, pass: `password`, db: `midjournaldb`)
-    - **Qdrant UI:** [http://localhost:6333/dashboard](http://localhost:6333/dashboard)
-    - **RabbitMQ Management UI:** [http://localhost:15672](http://localhost:15672) (user: `guest`, pass: `guest`)
-
-6.  **Stopping the Services:**
-    To stop the running containers, press `Ctrl+C` in the terminal where `docker compose up` is running, and then run:
     ```bash
-    docker compose down
+    docker-compose ps
     ```
-    To stop and remove the data volumes (use with caution, as this will delete your local databases):
-    ```bash
-    docker compose down --volumes
-    ```
+
+    You should see all services (`backend`, `postgres`, `qdrant`, `rabbitmq`) in the "running" state.
+
+3.  **Accessing the API:**
+    The FastAPI backend will be available at `http://localhost:8000`. You can access the OpenAPI documentation at `http://localhost:8000/docs`.
+
+## Database
+
+The application uses PostgreSQL for the relational database. The service is managed by Docker Compose.
+
+- **Connection:** The backend service connects to the database automatically using the `DATABASE_URL` environment variable defined in `docker-compose.yml`.
+- **Initialization:** When the backend service starts, it automatically creates the necessary database tables.
+
+## Stopping the Application
+
+To stop all running services, use the following command:
+
+```bash
+docker-compose down
+```
+
+This will stop and remove the containers. To remove the data volumes as well, you can run `docker-compose down -v`.

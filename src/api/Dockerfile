@@ -12,7 +12,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Install dependencies into a virtual environment
 RUN poetry config virtualenvs.in-project true && \
-    poetry install --no-root --no-dev
+    poetry install --no-root --without dev
 
 # Stage 2: Create the final production image
 FROM python:3.11-slim as final

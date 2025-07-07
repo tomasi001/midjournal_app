@@ -4,11 +4,35 @@ from typing import List, Optional, Dict
 from pydantic import BaseModel, Field
 
 
-class User(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+# User Schemas
+class UserBase(BaseModel):
     email: str
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class User(UserBase):
+    id: uuid.UUID
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserInDB(User):
     hashed_password: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# Token Schemas
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
 
 
 class Document(BaseModel):
