@@ -1,23 +1,23 @@
-# Stage 1: Build the virtual environment
+# --- Builder Stage ---
 FROM python:3.11-slim as builder
 
-# Set working directory
 WORKDIR /app
 
 # Install poetry
 RUN pip install poetry
 
-# Copy only the files necessary for dependency installation
+# Copy dependency files.
+# The build context set in docker-compose.yml is 'apps/backend'.
+# These files are at the root of that context.
 COPY pyproject.toml poetry.lock ./
 
-# Install dependencies into a virtual environment
+# Configure poetry and install dependencies into a local .venv
 RUN poetry config virtualenvs.in-project true && \
-    poetry install --no-root --without dev
+    poetry install --without dev --no-interaction --no-ansi
 
-# Stage 2: Create the final production image
+# --- Final Stage ---
 FROM python:3.11-slim as final
 
-# Set working directory
 WORKDIR /app
 
 # Copy the virtual environment from the builder stage
@@ -26,12 +26,11 @@ COPY --from=builder /app/.venv ./.venv
 # Activate the virtual environment
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Copy the application source code
-COPY ./src /app/src
+# Copy the application source code.
+# The context is 'apps/backend'. `src` is at the root of that context.
+COPY src ./src
 
-# Expose the port the app runs on
 EXPOSE 8000
 
-# Command to run the application
-# We'll need to create a main.py file in src/api/
+# Run the application
 CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"] 
