@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timezone
 
 from qdrant_client import QdrantClient, models
-from qdrant_client.http.models import Distance, VectorParams, PointStruct, UpdateStatus
+from qdrant_client.http.models import Distance, VectorParams, PointStruct
 
 from src.interfaces.vector_store_client import VectorStoreClient
 

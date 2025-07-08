@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from src.db.database import engine, Base, create_tables
+from src.db.database import create_tables
 from src.api.routers import auth, ingestion
 from src.ingestion.service import DocumentIngestionServiceImpl
 from src.message_queue.client import RabbitMQClient
-from src.text_processing.service import TextProcessingService, EmbeddingService
+from src.text_processing.service import EmbeddingService
 from src.vector_store.clients.qdrant import QdrantVectorStoreClient
 from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.api.routers import query

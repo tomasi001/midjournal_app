@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Dict
 
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from src.data_models.schemas import UserCreate, User, Token
+from src.data_models.schemas import UserCreate, Token
 from src.db import models
 
 

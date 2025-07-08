@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import List, Dict
 from .chunking import TextSplitter
 from .embedding import EmbeddingService
 

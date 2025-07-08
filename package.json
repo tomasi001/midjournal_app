@@ -2,17 +2,16 @@
   "name": "midjournal-monorepo",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@9.12.2",
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "test": "turbo run test"
+    "services:up": "docker-compose up -d",
+    "services:down": "docker-compose down",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test"
   },
   "devDependencies": {
     "turbo": "^2.5.4"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  }
 }

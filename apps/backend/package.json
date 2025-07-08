@@ -1,0 +1,17 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd ../.. && docker-compose up --build --remove-orphans",
+    "prelint": "poetry install --no-root",
+    "lint": "poetry run python -m ruff check src/ tests/",
+    "prelint:fix": "poetry install --no-root",
+    "lint:fix": "poetry run python -m ruff check src/ tests/ --fix",
+    "pretest": "poetry install --no-root",
+    "test": "poetry run python -m pytest tests/",
+    "preformat": "poetry install --no-root",
+    "format": "poetry run python -m ruff format src/ tests/",
+    "build-docker": "poetry run build-docker"
+  }
+}

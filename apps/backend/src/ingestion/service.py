@@ -1,5 +1,4 @@
 import uuid
-import json
 
 from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.interfaces.message_queue_client import MessageQueueClient

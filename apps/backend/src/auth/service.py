@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta, timezone
-import uuid
-from typing import Dict, Optional
+from typing import Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -10,11 +9,9 @@ from sqlalchemy.orm import Session
 
 from src.auth.config import settings
 from src.data_models.schemas import (
-    User,
     UserCreate,
     Token,
     TokenData,
-    UserInDB as UserInDBSchema,
 )
 from src.interfaces.authentication_service import AuthenticationService
 from src.db import models

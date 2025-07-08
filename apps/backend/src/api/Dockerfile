@@ -1,5 +1,5 @@
 # --- Builder Stage ---
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN poetry config virtualenvs.in-project true && \
     poetry install --no-root --without dev --no-interaction --no-ansi
 
 # --- Final Stage ---
-FROM python:3.11-slim as final
+FROM python:3.11-slim AS final
 
 WORKDIR /app
 
