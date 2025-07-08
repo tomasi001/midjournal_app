@@ -45,7 +45,7 @@ jobs:
         run: poetry install --no-root --with dev
 
       - name: Run Linting
-        run: turbo run backend#lint
+        run: pnpm lint
 
       - name: Run Tests
-        run: turbo run backend#test
+        run: pnpm test
