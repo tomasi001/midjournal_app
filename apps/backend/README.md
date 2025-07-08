@@ -1,11 +1,21 @@
-# MidJournal: Your Personalized RAG-powered Journal
+# MidJournal Backend
 
-MidJournal is an application designed to be a personal space for reflection and knowledge discovery. It combines the features of a traditional journal with a powerful Retrieval-Augmented Generation (RAG) system to help you connect with your thoughts, find insights in your entries, and even be rewarded with unique generated images.
+This directory (`apps/backend`) contains the source code for the MidJournal backend application.
 
-**Core Features:**
+It is a FastAPI application that provides the core services for the MidJournal platform, including:
 
-- **Multi-modal Input:** Add journal entries via text, voice, or by uploading existing documents.
-- **Intelligent Chat:** Converse with your journal. Ask questions and get answers based on your own writings.
-- **Insight Generation:** Discover patterns, sentiment, and key themes in your entries.
-- **Journaling:** A secure and private space for your thoughts.
-- **Image Rewards:** Receive unique, AI-generated images based on your journaling.
+- User Authentication & Management
+- Asynchronous Document Ingestion Pipeline (via RabbitMQ)
+- Text Processing (Chunking & Embeddings)
+- Vector Storage & Retrieval (Qdrant)
+- RAG-based Chat with an LLM (Ollama)
+
+## Tech Stack
+
+- **Framework:** FastAPI
+- **Database:** PostgreSQL (with SQLAlchemy)
+- **Vector Store:** Qdrant
+- **Message Queue:** RabbitMQ
+- **LLM Integration:** LangChain, Ollama
+
+For details on how to run this service as part of the wider monorepo, please see the main `README.md` in the project root.

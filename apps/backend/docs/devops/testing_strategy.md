@@ -14,7 +14,7 @@ This document defines the automated testing strategy for the MidJournal applicat
 ### 1. Unit Tests
 
 - **Framework:** `pytest`
-- **Location:** `tests/unit/`
+- **Location:** `apps/backend/tests/unit/`
 - **Scope:**
   - Test individual functions, methods, and classes in isolation.
   - All external dependencies (e.g., database connections, LLM service calls, API clients) **must be mocked**.
@@ -24,7 +24,7 @@ This document defines the automated testing strategy for the MidJournal applicat
 ### 2. Integration Tests
 
 - **Framework:** `pytest`
-- **Location:** `tests/integration/`
+- **Location:** `apps/backend/tests/integration/`
 - **Scope:**
   - Test the interaction between two or more services.
   - These tests will run against a real environment provisioned by `docker-compose`, including the API, a real database, and other backend services.
@@ -34,7 +34,7 @@ This document defines the automated testing strategy for the MidJournal applicat
 ### 3. End-to-End (E2E) Tests
 
 - **Framework:** `Playwright` (for the web frontend)
-- **Location:** `tests/e2e/`
+- **Location:** `apps/frontend/tests/e2e/` (or a dedicated `tests/e2e` package)
 - **Scope:**
   - Test full user journeys from the perspective of a user interacting with the live application UI.
   - These tests will be run against the `staging` environment, which should be a complete mirror of production.

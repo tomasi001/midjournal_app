@@ -13,8 +13,8 @@ This file tracks the progress for implementing the core features of the MidJourn
   - [x] Implement JWT middleware/decorator.
   - [x] Implement `GET /auth/me` endpoint.
 - [x] **Task 1.1.2: Enforce User Data Siloing in Backend Services**
-  - [ ] Require `user_id` in all relevant endpoints and services.
-  - [ ] Implement `user_id` filtering in `VectorStoreClient`.
+  - [x] Require `user_id` in all relevant endpoints and services.
+  - [x] Implement `user_id` filtering in `VectorStoreClient`.
   - [x] Ensure `WHERE user_id` clause in all PostgreSQL queries.
 
 ---

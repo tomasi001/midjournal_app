@@ -35,15 +35,18 @@ The pipeline is defined in `.github/workflows/ci.yml`.
 
 - **Trigger:** A push to any feature branch or pull request branch.
 - **Jobs:**
-  - **`Linting & Formatting`**: Run `flake8`, `black`, and `isort` to ensure code quality and consistency.
-  - **`Unit Tests`**: Run `pytest tests/unit/` with code coverage reporting to validate individual components.
+  - **`Linting & Formatting`**: Run `turbo run lint` to lint all workspaces. This will execute `flake8` for the backend.
+  - **`Unit Tests`**: Run `turbo run test` to run unit tests on all workspaces. This will execute `pytest tests/unit/` within the `apps/backend` context.
 
 ### 2. On `pull_request` to `main` branch
 
 - **Trigger:** A new pull request is opened targeting the `main` branch.
 - **Jobs:**
   - Runs all jobs from the previous stage (`Linting & Formatting`, `Unit Tests`).
-  - **`Build Docker Images`**: Build Docker images for all application services to ensure they can be successfully built. This does not push the images.
+  - **`Build Docker Images`**: Build the backend Docker image to ensure it can be successfully built. This does not push the image.
+    ```bash
+    docker-compose -f docker-compose.yml build backend
+    ```
   - These checks are required to pass before a PR can be merged.
 
 ### 3. On `push` to `main` branch (Post-Merge)
@@ -51,9 +54,9 @@ The pipeline is defined in `.github/workflows/ci.yml`.
 - **Trigger:** A pull request is merged into the `main` branch.
 - **Jobs:**
   - Runs all checks from the PR stage again on the merged code.
-  - **`Build & Push Docker Images`**: Build and push tagged Docker images to our container registry (e.g., AWS ECR). Images are tagged with the Git commit SHA.
+  - **`Build & Push Docker Images`**: Build and push tagged Docker images for the backend service to our container registry (e.g., AWS ECR). Images are tagged with the Git commit SHA.
   - **`Deploy to Development`**: Automatically triggers the IaC pipeline (Pulumi) to deploy the newly built images to the `development` environment.
-  - **`Run Integration Tests`**: Executes `pytest tests/integration/` against the newly deployed `development` environment.
+  - **`Run Integration Tests`**: Executes integration tests against the newly deployed `development` environment. This can be a `turbo run backend#test:integration` script if defined.
 
 ### 4. Manual Deployment to Staging & Production
 
