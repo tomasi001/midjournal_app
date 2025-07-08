@@ -22,6 +22,25 @@ services:
       ollama:
         condition: service_started
 
+  ingestion-worker:
+    build:
+      context: ./apps/backend
+      dockerfile: src/api/Dockerfile
+    volumes:
+      - ./apps/backend/src:/app/src
+    environment:
+      - DATABASE_URL=postgresql://youruser:yourpassword@db/yourdb
+      - QDRANT_URL=http://qdrant:6333
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
+    command: ["python", "src/ingestion/consumer.py"]
+    depends_on:
+      db:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+
   db:
     image: postgres:15-alpine
     environment:

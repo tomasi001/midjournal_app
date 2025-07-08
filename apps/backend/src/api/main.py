@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from src.db.database import create_tables
@@ -38,6 +39,20 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="MidJournal API", lifespan=lifespan)
+
+# CORS configuration
+origins = [
+    "http://localhost:3000",  # Allow frontend origin
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 app.include_router(auth.router)
 app.include_router(ingestion.router)

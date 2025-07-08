@@ -30,6 +30,7 @@ class OllamaInferenceService(LLMInferenceService):
             async for chunk in stream:
                 token = chunk["message"]["content"]
                 if token:
+                    print(f"Streaming token: '{token}'", flush=True)
                     yield token
 
         except Exception as e:
