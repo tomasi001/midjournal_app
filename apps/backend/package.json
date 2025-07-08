@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "install": "poetry install --no-root",
     "dev": "cd ../.. && docker-compose up --build --remove-orphans",
     "prelint": "poetry install --no-root",
     "lint": "poetry run python -m ruff check src/ tests/",

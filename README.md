@@ -4,21 +4,19 @@ This repository contains the source code for the MidJournal application, organiz
 
 ## What's Inside?
 
-This monorepo includes the following apps and packages:
+This monorepo includes the following applications:
 
 - `apps/backend`: The core FastAPI application that handles user authentication, data ingestion, RAG pipeline, and LLM interaction.
-- `apps/frontend`: (Coming soon) The Next.js web application for the user interface.
-- `packages/ui`: (Coming soon) Shared React components used by the frontend.
-- `packages/config`: (Coming soon) Shared configuration files (e.g., ESLint, TypeScript).
+- `apps/frontend`: The Next.js web application for the user interface.
 
 ## Local Development Setup
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/en/) (v18+)
-- [pnpm](https://pnpm.io/installation)
+- [Node.js](https://nodejs.org/en/) (v20+)
+- [pnpm](https://pnpm.io/installation) (version managed by `package.json`)
 - [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
-- [Poetry](https://python-poetry.org/docs/#installation) (for Python dependency management within the backend)
+- [Poetry](https://python-poetry.org/docs/#installation)
 
 ### Installation
 
@@ -30,41 +28,50 @@ This monorepo includes the following apps and packages:
     ```
 
 2.  **Install Node.js dependencies:**
-    From the root of the monorepo, run:
+    From the root of the monorepo, run `pnpm install`. This will install all necessary Node.js packages for all workspaces.
 
     ```bash
     pnpm install
     ```
 
 3.  **Install Python dependencies:**
-    Navigate to the backend app and use Poetry to install its dependencies.
+    Use `pnpm` to run the backend's dedicated installation script. This uses Poetry to install the Python dependencies.
     ```bash
-    cd apps/backend
-    poetry install
-    cd ../..
+    pnpm --filter backend install
     ```
 
 ### Running the Application
 
-1.  **Start Backend Infrastructure:**
-    From the root of the monorepo, start the required services (Postgres, Qdrant, RabbitMQ, Ollama) using Docker Compose.
+To start all services, including the backend containers and the frontend development server, simply run the following command from the root of the project:
 
-    ```bash
-    docker-compose up -d
-    ```
+```bash
+pnpm dev
+```
 
-2.  **Run Development Servers:**
-    From the root of the monorepo, use Turborepo to run the development server for the backend.
-    ```bash
-    turbo run dev
-    ```
-    This will start the backend on `http://localhost:8000`.
+- The backend API will be available at `http://localhost:8000`.
+- The frontend application will be available at `http://localhost:3000`.
 
 ## Available Scripts
 
-Turborepo is used to orchestrate tasks across the monorepo. Here are some of the main commands, which should be run from the root directory:
+Turborepo orchestrates all scripts from the root of the monorepo.
 
-- `pnpm dev`: Start all applications in development mode.
-- `pnpm build`: Build all applications for production.
-- `pnpm test`: Run tests for all applications.
-- `pnpm lint`: Run linters for all applications.
+- `pnpm dev`: Starts all applications in development mode. The backend runs via Docker Compose, and the frontend uses the Next.js dev server.
+- `pnpm build`: Builds all applications for production.
+- `pnpm lint`: Runs the linter for both the frontend (`ESLint`) and backend (`Ruff`).
+- `pnpm lint:fix`: Automatically fixes fixable linting errors in the backend code.
+- `pnpm test`: Runs the test suites for all applications.
+
+### Targeting a Specific Workspace
+
+You can run scripts for a single application by using the `--filter` flag. This is useful for isolating tasks.
+
+- **Run only the frontend dev server:**
+
+  ```bash
+  pnpm --filter frontend dev
+  ```
+
+- **Run only the backend linter:**
+  ```bash
+  pnpm --filter backend lint
+  ```
