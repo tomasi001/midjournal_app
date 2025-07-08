@@ -34,32 +34,21 @@ This file tracks the progress for implementing the core features of the MidJourn
 
 ---
 
-## 1.3 Core Query API & RAG Logic
+## 1.3 Query & Retrieval
 
 - [x] **Task 1.3.1: Query Service** - Create a service that takes a user query, embeds it, and retrieves relevant document chunks from the vector store.
 - [x] **Task 1.3.2: Query API Endpoint** - Expose the query service via a secure API endpoint.
 
 ---
 
-## 1.4 Basic Frontend (Web)
+## 1.4 LLM Integration
 
-- [ ] **Task 1.4.1: Set up Frontend Project Structure**
-  - [ ] Create `frontend/` directory.
-  - [ ] Initialize web project (React/Vue/etc.).
-- [ ] **Task 1.4.2: Implement User Registration & Login UI**
-  - [ ] Create registration/login forms.
-  - [ ] Implement client-side logic to call auth APIs.
-  - [ ] Implement JWT storage and basic routing.
-- [ ] **Task 1.4.3: Implement Text Input for Journal Entries**
-  - [ ] Create journal entry page with text area.
-  - [ ] Implement "Submit" to call ingestion API.
-- [ ] **Task 1.4.4: Implement Basic Chat Interface**
-  - [ ] Create chat page with input and history.
-  - [ ] Implement client-side logic to call query API.
+- [x] **Task 1.4.1: LLM Inference Service** - Create a service to take retrieved context and a user query and generate a response using an LLM.
+- [x] **Task 1.4.2: Streaming API Endpoint** - Create a new endpoint that streams the LLM's response back to the user.
 
 ---
 
-## 1.5 Testing & Deployment (Phase 1)
+## 1.5 Finalization & Review
 
 - [ ] **Task 1.5.1: Write Comprehensive Unit & Integration Tests**
   - [ ] Write unit tests for all new services.

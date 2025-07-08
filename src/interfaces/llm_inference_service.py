@@ -1,37 +1,26 @@
-from typing import List, Dict, Protocol
+from abc import ABC, abstractmethod
+from typing import List, Dict, Any, AsyncGenerator
 
 
-class LLMInferenceService(Protocol):
+class LLMInferenceService(ABC):
     """
     Defines the contract for a service that interacts with a Large Language Model.
     """
 
-    def generate_response(
-        self, prompt: str, context: List[str], user_id: str, model_config: Dict
-    ) -> str:
+    @abstractmethod
+    async def generate_response_stream(
+        self, query: str, context: List[Dict[str, Any]]
+    ) -> AsyncGenerator[str, None]:
         """
-        Generates a conversational response from the LLM based on a prompt and retrieved context.
+        Generates a response by streaming tokens from an LLM.
 
         Args:
-            prompt: The user's original query.
-            context: A list of relevant text chunks retrieved from the vector database.
-            user_id: The ID of the user, for any user-specific configurations.
-            model_config: A dictionary for model parameters (e.g., temperature, max_tokens).
+            query: The user's original query.
+            context: A list of relevant document chunks retrieved from the vector store.
 
-        Returns:
-            The generated string response from the LLM.
+        Yields:
+            A stream of response tokens from the language model.
         """
-        ...
-
-    def analyze_text_for_insights(self, text: str, analysis_type: str) -> Dict:
-        """
-        Analyzes a piece of text to extract specific insights.
-
-        Args:
-            text: The text to be analyzed (e.g., a journal entry).
-            analysis_type: The type of analysis to perform (e.g., "sentiment", "keywords", "summary").
-
-        Returns:
-            A dictionary containing the results of the analysis.
-        """
-        ...
+        # The 'yield' statement is used in the implementation, not the abstract method.
+        # This is just for type hinting purposes.
+        yield
