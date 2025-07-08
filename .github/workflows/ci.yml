@@ -29,9 +29,6 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
-      - name: Install root dependencies
-        run: pnpm install
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -40,9 +37,8 @@ jobs:
       - name: Install Poetry
         run: pipx install poetry
 
-      - name: Install backend dependencies
-        working-directory: ./apps/backend
-        run: poetry install --no-root --with dev
+      - name: Install Dependencies
+        run: pnpm install
 
       - name: Run Linting
         run: pnpm lint
