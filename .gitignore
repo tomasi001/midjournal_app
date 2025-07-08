@@ -103,4 +103,7 @@ env/
 dmypy.json
 
 # Pyre type checker
-.pyre/ 
+.pyre/
+
+# Node modules
+node_modules/
