@@ -37,6 +37,18 @@ jobs:
       - name: Install Poetry
         run: pipx install poetry
 
+      - name: Get Poetry cache directory
+        id: poetry-cache
+        run: echo "dir=$(poetry config virtualenvs.path)" >> $GITHUB_OUTPUT
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.poetry-cache.outputs.dir }}
+          key: poetry-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-
+
       - name: Install Dependencies
         run: pnpm install
 
