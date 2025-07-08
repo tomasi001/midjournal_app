@@ -3,13 +3,9 @@ from typing import List, Dict, Any, AsyncGenerator
 
 
 class LLMInferenceService(ABC):
-    """
-    Defines the contract for a service that interacts with a Large Language Model.
-    """
-
     @abstractmethod
     async def generate_response_stream(
-        self, query: str, context: List[Dict[str, Any]]
+        self, query: str, context: List[str], user_id: str, model_config: Dict[str, Any]
     ) -> AsyncGenerator[str, None]:
         """
         Generates a response by streaming tokens from an LLM.
@@ -17,6 +13,8 @@ class LLMInferenceService(ABC):
         Args:
             query: The user's original query.
             context: A list of relevant document chunks retrieved from the vector store.
+            user_id: The ID of the user performing the query.
+            model_config: A dictionary for model parameters (e.g., temperature).
 
         Yields:
             A stream of response tokens from the language model.

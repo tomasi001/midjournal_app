@@ -51,11 +51,17 @@ async def perform_chat_query(
     Accepts a user's query, retrieves context, and streams a response from an LLM.
     """
     # 1. Get context
-    context = query_service.query(user_id=str(current_user.id), query_text=request.text)
+    context_docs = query_service.query(
+        user_id=str(current_user.id), query_text=request.text
+    )
+    context_text = [doc["text"] for doc in context_docs if "text" in doc]
 
     # 2. Generate and stream response
     response_stream = llm_service.generate_response_stream(
-        query=request.text, context=context
+        query=request.text,
+        context=context_text,
+        user_id=str(current_user.id),
+        model_config={},  # Passing an empty dict for now
     )
 
     return StreamingResponse(response_stream, media_type="text/plain")
