@@ -2,7 +2,8 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "outputs": [".next/**", "dist/**", "build/**"]
+      "outputs": [".next/**", "dist/**", "build/**"],
+      "dependsOn": ["^build"]
     },
     "dev": {
       "cache": false,
@@ -15,6 +16,49 @@
       "outputs": []
     },
     "clean": {
+      "cache": false
+    },
+    "backend#dev": {
+      "cwd": "apps/backend",
+      "command": "poetry run start",
+      "persistent": true,
+      "cache": false
+    },
+    "backend#build": {
+      "cwd": "apps/backend",
+      "command": "poetry run build-docker",
+      "outputs": ["."],
+      "cache": false,
+      "inputs": [
+        "apps/backend/poetry.lock",
+        "apps/backend/pyproject.toml",
+        "apps/backend/src/**",
+        "apps/backend/db/**",
+        "apps/backend/tests/**",
+        "apps/backend/Dockerfile",
+        "apps/backend/.dockerignore"
+      ]
+    },
+    "backend#test": {
+      "cwd": "apps/backend",
+      "command": "poetry run test",
+      "outputs": ["apps/backend/coverage.xml", "apps/backend/htmlcov/"],
+      "inputs": [
+        "apps/backend/src/**",
+        "apps/backend/tests/**",
+        "apps/backend/pyproject.toml"
+      ]
+    },
+    "backend#lint": {
+      "cwd": "apps/backend",
+      "command": "poetry run lint",
+      "outputs": [],
+      "inputs": ["apps/backend/src/**", "apps/backend/tests/**"]
+    },
+    "backend#format": {
+      "cwd": "apps/backend",
+      "command": "poetry run format",
+      "outputs": [],
       "cache": false
     }
   }
