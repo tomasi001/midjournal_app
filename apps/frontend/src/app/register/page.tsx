@@ -19,10 +19,13 @@ import { toast } from "sonner";
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -41,6 +44,8 @@ export default function RegisterPage() {
       }
     } catch (error) {
       toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,9 +54,9 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit}>
         <Card className="w-full max-w-sm">
           <CardHeader>
-            <CardTitle className="text-2xl">Register</CardTitle>
+            <CardTitle className="text-2xl">Sign Up</CardTitle>
             <CardDescription>
-              Enter your email and password to create an account.
+              Enter your information to create an account
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -64,6 +69,7 @@ export default function RegisterPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-2">
@@ -74,12 +80,13 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">
-            <Button className="w-full" type="submit">
-              Create account
+            <Button className="w-full" type="submit" disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Create an account"}
             </Button>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
