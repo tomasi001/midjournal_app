@@ -3,6 +3,7 @@ import uuid
 
 from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.api.dependencies.auth import get_current_user
+from src.api.dependencies.services import get_document_ingestion_service
 from src.data_models.schemas import User, IngestionResponse
 
 
@@ -17,7 +18,9 @@ router = APIRouter(
 async def upload_document(
     current_user: User = Depends(get_current_user),
     file: UploadFile = File(...),
-    ingestion_service: DocumentIngestionService = Depends(),
+    ingestion_service: DocumentIngestionService = Depends(
+        get_document_ingestion_service
+    ),
 ):
     """
     Accepts a document (text, image, or PDF), extracts content,

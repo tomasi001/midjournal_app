@@ -23,21 +23,6 @@ async def lifespan(app: FastAPI):
     create_tables()
     print("Database tables created.")
 
-    # Service Instantiation for services that need to be singletons
-    # or have a startup lifecycle.
-    embedding_service = EmbeddingService()
-    vector_store_client = QdrantVectorStoreClient()
-    query_service_impl = QueryServiceImpl(
-        embedding_service=embedding_service, vector_store_client=vector_store_client
-    )
-
-    # Dependency Overrides
-    app.dependency_overrides[QueryService] = lambda: query_service_impl
-    app.dependency_overrides[MessageQueueClient] = lambda: RabbitMQClient()
-    app.dependency_overrides[OCRService] = lambda: TesseractOCRService()
-    # DocumentIngestionService will be created by FastAPI on-demand
-    app.dependency_overrides[DocumentIngestionService] = DocumentIngestionServiceImpl
-
     yield
     # On shutdown
     print("Application shutting down.")
@@ -59,6 +44,7 @@ app.add_middleware(
 )
 
 
+# --- Routers ---
 app.include_router(auth.router)
 app.include_router(ingestion.router)
 app.include_router(query.router)

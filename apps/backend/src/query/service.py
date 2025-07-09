@@ -24,7 +24,7 @@ class QueryServiceImpl(QueryService):
         print(f"Querying for user '{user_id}' with text: '{query_text}'")
 
         # 1. Embed the query text
-        query_embedding = self.embedding_service.get_embedding(query_text)
+        query_embedding = self.embedding_service.generate_embedding(query_text)
 
         # 2. Query the vector store
         # Convert user_id string to UUID for the client

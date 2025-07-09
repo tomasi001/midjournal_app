@@ -1,7 +1,11 @@
 import sys
 import os
 import uuid
+import json
+import logging
+import time
 from sqlalchemy.orm import Session
+from typing import Dict
 
 # Add the project root to the Python path to allow for absolute imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -12,57 +16,80 @@ from src.vector_store.clients.qdrant import QdrantVectorStoreClient
 from src.db.database import SessionLocal
 from src.db.models import Document
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
-def process_ingestion_message(db: Session, message_data: dict):
+
+def get_dependencies() -> Dict:
     """
-    The core logic for processing an ingestion message.
+    Function to get the dependencies for the callback function.
     """
-    print("Processing new ingestion message...")
+    return {
+        "text_processing_service": TextProcessingService(),
+        "vector_store_client": QdrantVectorStoreClient(),
+    }
 
-    user_id_str = message_data.get("user_id")
-    text = message_data.get("text")
 
-    if not user_id_str or not text:
-        print("Message is missing user_id or text. Skipping.")
-        return
-
-    user_id = uuid.UUID(user_id_str)
-
-    # 1. Create a document record in PostgreSQL to track the ingestion process
-    db_document = Document(
-        user_id=user_id,
-        source_name="text_ingestion",  # In the future, this could be a filename
-        status="processing",
-    )
-    db.add(db_document)
-    db.commit()
-    db.refresh(db_document)
-    print(f"Created document record {db_document.id} for user {user_id}")
-
+def callback(ch, method, properties, body, deps=get_dependencies()):
+    """Callback function to process messages from the ingestion queue."""
+    message = {}
+    document_id = "N/A"
     try:
-        # 2. Chunk and embed the text
-        text_processor = TextProcessingService()
-        processed_chunks = text_processor.chunk_and_embed_text(text)
-        print(f"Text processed into {len(processed_chunks)} chunks.")
+        message = json.loads(body)
+        document_id = message.get("document_id", "N/A")
+        user_id = message.get("user_id", "N/A")
 
-        # 3. Store the chunks and embeddings in the vector store
-        vector_store = QdrantVectorStoreClient()
-        vector_store.add_documents(user_id=user_id, documents=processed_chunks)
-        print("Chunks added to vector store.")
+        logging.info(
+            f"Received message for document_id: {document_id}, user_id: {user_id}"
+        )
+        start_time = time.time()
 
-        # 4. Update the document status to 'complete'
-        db_document.status = "complete"
-        db.commit()
-        print(
-            f"Document {db_document.id} successfully processed and marked as complete."
+        text_processing_service: TextProcessingService = deps["text_processing_service"]
+        vector_store_client: QdrantVectorStoreClient = deps["vector_store_client"]
+
+        logging.info(f"Starting text processing for document_id: {document_id}")
+        text_chunks, embeddings = text_processing_service.process_text(message["text"])
+        processing_time = time.time() - start_time
+        logging.info(
+            f"Text processing completed for document_id: {document_id} in {processing_time:.2f} seconds. Found {len(text_chunks)} chunks."
         )
 
+        logging.info(f"Saving chunks to vector store for document_id: {document_id}")
+
+        # Prepare documents in the format expected by QdrantVectorStoreClient
+        documents_to_add = [
+            {"text": chunk, "vector": embedding}
+            for chunk, embedding in zip(text_chunks, embeddings)
+        ]
+
+        vector_store_client.add_documents(
+            user_id=uuid.UUID(user_id),
+            documents=documents_to_add,
+        )
+        saving_time = time.time() - start_time - processing_time
+        logging.info(
+            f"Saved to vector store for document_id: {document_id} in {saving_time:.2f} seconds."
+        )
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+        total_time = time.time() - start_time
+        logging.info(
+            f"Successfully processed and ACKed document_id: {document_id}. Total time: {total_time:.2f} seconds."
+        )
+
+    except json.JSONDecodeError as e:
+        logging.error(f"Failed to decode JSON body: {body}. Error: {e}", exc_info=True)
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
     except Exception as e:
-        print(f"An error occurred during ingestion processing: {e}")
-        # If something goes wrong, mark the document as 'failed'
-        db_document.status = "failed"
-        db.commit()
-        raise  # Re-raise the exception to signal the message processing failed
+        logging.error(
+            f"Failed to process message for document_id: {document_id}. Error: {e}",
+            exc_info=True,
+        )
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 
 def main():
@@ -73,19 +100,9 @@ def main():
     mq_client = RabbitMQClient()
     db_session = SessionLocal()
 
-    def message_callback(message_data: dict):
-        try:
-            process_ingestion_message(db=db_session, message_data=message_data)
-        except Exception as e:
-            # The exception is already logged in the processing function
-            # This is where you might add more robust error handling or retries
-            print("Message processing failed. See logs for details.")
-            # The nack is handled in the underlying client, so we don't need to do it here
-            raise e  # Re-raising will cause the client to nack the message
-
     try:
         queue_name = "ingestion-queue"
-        mq_client.subscribe(queue_name, message_callback)
+        mq_client.subscribe(queue_name, callback)
     except KeyboardInterrupt:
         print("Consumer stopped by user.")
     finally:

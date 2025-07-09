@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 from src.interfaces.query_service import QueryService
 from src.data_models.schemas import User
 from src.api.dependencies.auth import get_current_user
+from src.api.dependencies.services import get_query_service
 from src.llm.service import OllamaInferenceService
 
 router = APIRouter(
@@ -27,7 +28,7 @@ class QueryResponse(BaseModel):
 def perform_query(
     request: QueryRequest,
     current_user: User = Depends(get_current_user),
-    query_service: QueryService = Depends(),
+    query_service: QueryService = Depends(get_query_service),
 ):
     """
     Accepts a user's query, retrieves relevant document chunks, and returns them.
@@ -45,7 +46,7 @@ llm_service = OllamaInferenceService()
 async def perform_chat_query(
     request: QueryRequest,
     current_user: User = Depends(get_current_user),
-    query_service: QueryService = Depends(),
+    query_service: QueryService = Depends(get_query_service),
 ):
     """
     Accepts a user's query, retrieves context, and streams a response from an LLM.

@@ -10,8 +10,8 @@ from fastapi import Depends
 class DocumentIngestionServiceImpl(DocumentIngestionService):
     def __init__(
         self,
-        mq_client: MessageQueueClient = Depends(),
-        ocr_service: OCRService = Depends(),
+        mq_client: MessageQueueClient,
+        ocr_service: OCRService,
     ):
         self.mq_client = mq_client
         self.ocr_service = ocr_service

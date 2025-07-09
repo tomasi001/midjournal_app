@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface AuthContextType {
   token: string | null;
+  isLoading: boolean;
   login: (token: string) => void;
   logout: () => void;
 }
@@ -12,11 +13,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-    if (storedToken) {
-      setToken(storedToken);
+    try {
+      const storedToken = localStorage.getItem("authToken");
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    } catch (e) {
+      console.error("Failed to read auth token from local storage", e);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -31,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ token, login, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

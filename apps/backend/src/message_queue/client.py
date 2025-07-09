@@ -79,22 +79,25 @@ class RabbitMQClient(MessageQueueClient):
             f" [*] Waiting for messages in queue '{queue_name}'. To exit press CTRL+C"
         )
 
-        def callback(ch, method, properties, body):
+        def wrapper_callback(ch, method, properties, body):
             print(f" [x] Received message from queue '{queue_name}'")
-            message_data = json.loads(body)
             try:
-                callback_function(message_data)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-                print(f" [x] Acknowledged message from queue '{queue_name}'")
+                # Pass all original arguments to the user-provided callback
+                callback_function(ch, method, properties, body)
+                # The user's callback is now responsible for ack/nack
             except Exception as e:
-                print(f"Error processing message: {e}")
-                ch.basic_nack(
-                    delivery_tag=method.delivery_tag, requeue=False
-                )  # Don't requeue on failure
-                print(f" [x] Rejected message from queue '{queue_name}'")
+                print(f"Error in user-provided callback: {e}")
+                # It's safer for the callback to handle its own exceptions and ack/nack,
+                # but we can provide a basic safety net here.
+                # We will NACK without requeueing to prevent poison pills.
+                if ch.is_open:
+                    ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+                print(f" [x] Rejected message from queue '{queue_name}' due to error.")
 
         self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(queue=queue_name, on_message_callback=callback)
+        self.channel.basic_consume(
+            queue=queue_name, on_message_callback=wrapper_callback
+        )
 
         try:
             self.channel.start_consuming()

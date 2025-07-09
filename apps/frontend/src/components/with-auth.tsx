@@ -8,16 +8,22 @@ export function withAuth<P extends object>(
   WrappedComponent: React.ComponentType<P>
 ) {
   const WithAuthComponent: React.FC<P> = (props) => {
-    const { token } = useAuth();
+    const { token, isLoading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
+      // Don't redirect until loading is complete
+      if (isLoading) {
+        return;
+      }
       if (!token) {
         router.replace("/login");
       }
-    }, [token, router]);
+    }, [token, router, isLoading]);
 
-    if (!token) {
+    // While loading, or if there's no token (and we're about to redirect),
+    // render nothing to avoid a flash of the protected content.
+    if (isLoading || !token) {
       // You can return a loader here while redirecting
       return null;
     }

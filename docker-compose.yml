@@ -32,7 +32,7 @@ services:
       - DATABASE_URL=postgresql://youruser:yourpassword@db/yourdb
       - QDRANT_URL=http://qdrant:6333
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
-    command: ["python", "src/ingestion/consumer.py"]
+    command: ["python", "-u", "src/ingestion/consumer.py"]
     depends_on:
       db:
         condition: service_healthy

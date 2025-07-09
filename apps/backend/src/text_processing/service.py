@@ -1,6 +1,11 @@
-from typing import List, Dict
-from .chunking import TextSplitter
-from .embedding import EmbeddingService
+import logging
+from typing import List, Tuple
+from src.text_processing.chunking import TextSplitter
+from src.text_processing.embedding import EmbeddingService
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class TextProcessingService:
@@ -8,31 +13,22 @@ class TextProcessingService:
         self._text_splitter = TextSplitter()
         self._embedding_service = EmbeddingService()
 
-    def chunk_and_embed_text(self, text: str) -> List[Dict]:
+    def process_text(self, text: str) -> Tuple[List[str], List[List[float]]]:
         """
-        Takes a raw text, splits it into chunks, and generates an embedding for each chunk.
-
-        Returns:
-            A list of dictionaries, where each dictionary contains the text chunk
-            and its corresponding embedding vector.
+        Processes a raw text string by chunking it and then creating embeddings for each chunk.
         """
-        chunks = self._text_splitter.split_text(text)
-        embeddings = self._embedding_service.get_embedding(chunks)
+        logging.info("Starting text chunking...")
+        text_chunks = self._text_splitter.split_text(text)
+        logging.info(f"Created {len(text_chunks)} text chunks.")
 
-        if len(chunks) != len(embeddings):
-            raise ValueError(
-                "Mismatch between number of chunks and embeddings generated."
-            )
+        logging.info("Starting chunk embedding...")
+        embeddings = self._embedding_service.get_embedding(text_chunks)
+        logging.info("Chunk embedding complete.")
 
-        processed_chunks = []
-        for i, chunk_text in enumerate(chunks):
-            processed_chunks.append({"text": chunk_text, "vector": embeddings[i]})
-
-        return processed_chunks
+        return text_chunks, embeddings
 
     def generate_embedding(self, text: str) -> List[float]:
         """
         Generates an embedding for a single piece of text without chunking.
-        Useful for embedding user queries.
         """
         return self._embedding_service.get_embedding(text)
