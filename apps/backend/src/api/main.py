@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from src.db.database import create_tables
-from src.api.routers import auth, ingestion, query, tts
+from src.api.routers import auth, ingestion, query, tts, journal
 from src.ingestion.service import DocumentIngestionServiceImpl
 from src.message_queue.client import RabbitMQClient
 from src.text_processing.service import EmbeddingService
@@ -49,6 +49,7 @@ app.include_router(auth.router)
 app.include_router(ingestion.router)
 app.include_router(query.router)
 app.include_router(tts.router)
+app.include_router(journal.router)
 
 
 @app.get("/")

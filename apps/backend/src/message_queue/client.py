@@ -2,115 +2,73 @@ import pika
 import json
 import os
 from typing import Callable, Dict
+from contextlib import contextmanager
 
 from src.interfaces.message_queue_client import MessageQueueClient
 
 
 class RabbitMQClient(MessageQueueClient):
-    def __init__(self):
-        self.rabbitmq_url = os.getenv(
-            "RABBITMQ_URL", "amqp://guest:guest@localhost:5672/"
-        )
-        self.connection = None
-        self.channel = None
-        self._connect()
+    def __init__(self, rabbitmq_url="amqp://guest:guest@rabbitmq/"):
+        self.rabbitmq_url = rabbitmq_url
 
-    def _connect(self):
-        """Establishes a connection and a channel."""
+    @contextmanager
+    def _get_connection(self):
+        connection = None
         try:
-            # Add a heartbeat to prevent idle connection timeouts
-            params = pika.URLParameters(self.rabbitmq_url)
-            params.heartbeat = 600  # seconds (10 minutes)
+            connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
+            yield connection
+        finally:
+            if connection and connection.is_open:
+                connection.close()
 
-            self.connection = pika.BlockingConnection(params)
-            self.channel = self.connection.channel()
-            print("Successfully connected to RabbitMQ with heartbeat.")
-        except pika.exceptions.AMQPConnectionError as e:
-            print(f"Failed to connect to RabbitMQ: {e}")
-            # In a real app, you'd have a reconnection strategy here
-            self.connection = None
-            self.channel = None
-
-    def _ensure_connected(self):
-        """Ensures there is an active connection."""
-        if (
-            not self.connection
-            or self.connection.is_closed
-            or not self.channel
-            or self.channel.is_closed
-        ):
-            print("Connection lost. Reconnecting to RabbitMQ...")
-            self._connect()
-
-    def publish(self, queue_name: str, message: Dict):
-        """
-        Publishes a JSON message to the specified queue.
-        The queue is declared to ensure it exists.
-        """
-        self._ensure_connected()
-        if not self.channel:
-            print("Cannot publish message, channel is not available.")
-            return
-
+    def publish(self, queue_name: str, message: dict):
         try:
-            self.channel.queue_declare(queue=queue_name, durable=True)
-            self.channel.basic_publish(
-                exchange="",
-                routing_key=queue_name,
-                body=json.dumps(message),
-                properties=pika.BasicProperties(
-                    delivery_mode=2,  # make message persistent
-                ),
-            )
-            print(f" [x] Sent message to queue '{queue_name}'")
+            with self._get_connection() as connection:
+                channel = connection.channel()
+                channel.queue_declare(queue=queue_name, durable=True)
+                channel.basic_publish(
+                    exchange="",
+                    routing_key=queue_name,
+                    body=json.dumps(message),
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,  # make message persistent
+                    ),
+                )
         except Exception as e:
+            # In a real app, you'd have more robust error handling.
             print(f"Failed to publish message: {e}")
+            # Depending on requirements, you might want to re-raise the exception
+            # or handle it in a specific way (e.g., retry logic).
 
-    def subscribe(self, queue_name: str, callback_function: Callable):
-        """
-        Subscribes to a queue and starts consuming messages.
-        This method will block and wait for messages.
-        """
-        self._ensure_connected()
-        if not self.channel:
-            print("Cannot subscribe to queue, channel is not available.")
-            return
+    def subscribe(self, queue_name: str, callback, get_dependencies_func=None):
+        # This method is for long-running consumers, so it manages its own connection.
+        connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
+        channel = connection.channel()
+        channel.queue_declare(queue=queue_name, durable=True)
 
-        self.channel.queue_declare(queue=queue_name, durable=True)
         print(
             f" [*] Waiting for messages in queue '{queue_name}'. To exit press CTRL+C"
         )
 
-        def wrapper_callback(ch, method, properties, body):
-            print(f" [x] Received message from queue '{queue_name}'")
-            try:
-                # Pass all original arguments to the user-provided callback
-                callback_function(ch, method, properties, body)
-                # The user's callback is now responsible for ack/nack
-            except Exception as e:
-                print(f"Error in user-provided callback: {e}")
-                # It's safer for the callback to handle its own exceptions and ack/nack,
-                # but we can provide a basic safety net here.
-                # We will NACK without requeueing to prevent poison pills.
-                if ch.is_open:
-                    ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-                print(f" [x] Rejected message from queue '{queue_name}' due to error.")
+        # Pass a wrapper callback that includes dependencies
+        deps = get_dependencies_func() if get_dependencies_func else {}
 
-        self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(
-            queue=queue_name, on_message_callback=wrapper_callback
-        )
+        def callback_with_deps(ch, method, properties, body):
+            callback(ch, method, properties, body, deps)
+
+        channel.basic_consume(queue=queue_name, on_message_callback=callback_with_deps)
 
         try:
-            self.channel.start_consuming()
+            channel.start_consuming()
         except KeyboardInterrupt:
-            self.channel.stop_consuming()
-        except Exception as e:
-            print(f"Consumer error: {e}")
-            self.channel.stop_consuming()
+            print("Consumer stopped.")
+        finally:
+            connection.close()
+            # Clean up dependencies if they have close methods
+            if "db_session" in deps and hasattr(deps.get("db_session"), "close"):
+                deps["db_session"].close()
 
     def close(self):
-        """Closes the connection to RabbitMQ."""
-        if self.connection and self.connection.is_open:
-            self.connection.close()
-            print("RabbitMQ connection closed.")
+        # Since connections are now short-lived, this might not be needed
+        # for the publisher, but it's good practice to have.
+        pass

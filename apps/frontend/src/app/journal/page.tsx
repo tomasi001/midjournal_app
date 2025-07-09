@@ -16,6 +16,57 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  JournalEntriesList,
+  JournalEntry,
+} from "@/components/journal-entries-list";
+
+// Speech recognition types for browsers that support it
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  readonly resultIndex: number;
+  readonly results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  readonly isFinal: boolean;
+  readonly length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  readonly transcript: string;
+  readonly confidence: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+  readonly message: string;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
 
 function JournalPage() {
   const { token, logout } = useAuth();
@@ -24,8 +75,65 @@ function JournalPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [isEntriesLoading, setIsEntriesLoading] = useState(true);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchEntries = useCallback(async () => {
+    if (!token) {
+      setIsEntriesLoading(false);
+      return;
+    }
+    setIsEntriesLoading(true);
+    try {
+      const response = await fetch("/api/journal/entries", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEntries(data);
+      } else {
+        toast.error("Failed to fetch journal entries.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while fetching journal entries.");
+      console.error(error);
+    } finally {
+      setIsEntriesLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
+
+  useEffect(() => {
+    // Check if any entries are still being analyzed
+    const isAnalysisPending = entries.some((entry) => !entry.sentiment);
+
+    // If analysis is pending, start polling
+    if (isAnalysisPending && !pollingIntervalRef.current) {
+      pollingIntervalRef.current = setInterval(() => {
+        fetchEntries();
+      }, 5000); // Poll every 5 seconds
+    } else if (!isAnalysisPending && pollingIntervalRef.current) {
+      // If no analysis is pending, stop polling
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+
+    // Cleanup on component unmount
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [entries, fetchEntries]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -37,7 +145,7 @@ function JournalPage() {
         recognitionRef.current.interimResults = false;
         recognitionRef.current.lang = "en-US";
 
-        recognitionRef.current.onresult = (event: any) => {
+        recognitionRef.current.onresult = (event) => {
           let transcript_to_append = "";
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             transcript_to_append += event.results[i][0].transcript;
@@ -51,7 +159,7 @@ function JournalPage() {
           }
         };
 
-        recognitionRef.current.onerror = (event: any) => {
+        recognitionRef.current.onerror = (event) => {
           console.error("Speech recognition error", event.error);
           toast.error(`Speech recognition error: ${event.error}`);
           setIsRecording(false);
@@ -90,12 +198,35 @@ function JournalPage() {
       toast.error("Please enter some text to submit.");
       return;
     }
-    const textAsBlob = new Blob([text], { type: "text/plain" });
-    const textFile = new File([textAsBlob], "journal_entry.txt", {
-      type: "text/plain",
-    });
-    await handleSubmit(textFile);
-    setText("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/journal/entry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: text }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast.success("Journal entry created successfully.");
+        setText(""); // Clear textarea
+        fetchEntries(); // Refresh the list
+      } else {
+        toast.error(
+          `Failed to create entry: ${result.detail || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      toast.error("An error occurred while creating the journal entry.");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFileSubmit = async () => {
@@ -180,7 +311,7 @@ function JournalPage() {
       </header>
       <main className="grid md:grid-cols-2 gap-8">
         <div>
-          <h2 className="text-2xl font-bold mb-4">Submit a Memory</h2>
+          <h2 className="text-2xl font-bold mb-4">Create a Journal Entry</h2>
           <div className="space-y-4">
             <Textarea
               placeholder="What's on your mind?"
@@ -219,7 +350,8 @@ function JournalPage() {
                         <p>Drop the file here ...</p>
                       ) : (
                         <p>
-                          Drag 'n' drop a file here, or click to select a file
+                          Drag &apos;n&apos; drop a file here, or click to
+                          select a file
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground mt-2">
@@ -263,7 +395,11 @@ function JournalPage() {
             </div>
           </div>
         </div>
-        <div>
+        <div className="md:col-span-1">
+          <h2 className="text-2xl font-bold mb-4">Past Entries</h2>
+          <JournalEntriesList entries={entries} isLoading={isEntriesLoading} />
+        </div>
+        <div className="md:col-span-2">
           <Chat />
         </div>
       </main>

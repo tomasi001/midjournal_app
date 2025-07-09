@@ -53,15 +53,28 @@ class TextChunk(BaseModel):
     metadata: Dict = Field(default_factory=dict)
 
 
-class JournalEntry(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
+# Journal Entry Schemas
+class JournalEntryBase(BaseModel):
     title: Optional[str] = None
-    content: str  # The main text of the journal entry
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    # The following fields are populated by the analysis service
-    analysis_summary: Optional[str] = None
+    content: str
+
+
+class JournalEntryCreate(JournalEntryBase):
+    pass
+
+
+class JournalEntry(JournalEntryBase):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+    sentiment: Optional[str] = None
+    keywords: Optional[List[str]] = None
+    summary: Optional[str] = None
     generated_image_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 class IngestionResponse(BaseModel):

@@ -22,3 +22,7 @@ class LLMInferenceService(ABC):
         # The 'yield' statement is used in the implementation, not the abstract method.
         # This is just for type hinting purposes.
         yield
+
+    @abstractmethod
+    async def generate_response(self, prompt: str, model_config: Dict[str, Any]) -> str:
+        pass

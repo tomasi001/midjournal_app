@@ -62,7 +62,7 @@ def callback(ch, method, properties, body, deps=get_dependencies()):
 
         # Prepare documents in the format expected by QdrantVectorStoreClient
         documents_to_add = [
-            {"text": chunk, "vector": embedding}
+            {"text": chunk, "vector": embedding, "source": "document"}
             for chunk, embedding in zip(text_chunks, embeddings)
         ]
 
@@ -102,7 +102,7 @@ def main():
 
     try:
         queue_name = "ingestion-queue"
-        mq_client.subscribe(queue_name, callback)
+        mq_client.subscribe(queue_name, callback, get_dependencies)
     except KeyboardInterrupt:
         print("Consumer stopped by user.")
     finally:

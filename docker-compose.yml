@@ -41,6 +41,23 @@ services:
       rabbitmq:
         condition: service_started
 
+  analysis-worker:
+    build:
+      context: ./apps/backend
+      dockerfile: src/api/Dockerfile
+    volumes:
+      - ./apps/backend/src:/app/src
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
+      - DATABASE_URL=postgresql://youruser:yourpassword@db/yourdb
+      - OLLAMA_HOST=http://ollama:11434
+    command: ["python", "-u", "src/analysis/consumer.py"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:15-alpine
     environment:
@@ -51,7 +68,6 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./apps/backend/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U youruser -d yourdb"]
       interval: 5s

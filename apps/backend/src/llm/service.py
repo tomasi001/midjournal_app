@@ -37,3 +37,19 @@ class OllamaInferenceService(LLMInferenceService):
             error_message = f"An error occurred while communicating with Ollama: {e}"
             print(f"ERROR: {error_message}")
             yield error_message
+
+    async def generate_response(self, prompt: str, model_config: Dict[str, Any]) -> str:
+        """
+        Generates a non-streaming response from Ollama.
+        """
+        try:
+            response = await self.client.chat(
+                model="llama3",
+                messages=[{"role": "user", "content": prompt}],
+                stream=False,
+            )
+            return response["message"]["content"]
+        except Exception as e:
+            error_message = f"An error occurred while communicating with Ollama: {e}"
+            print(f"ERROR: {error_message}")
+            return error_message

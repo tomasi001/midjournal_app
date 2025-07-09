@@ -40,19 +40,19 @@
 
 ## 3.3 Journaling & Basic Insights
 
-- [ ] **Task 3.3.1: Implement Dedicated Journal Entry Capture & Storage**
-  - [ ] Update DB schema with `JournalEntry` table.
-  - [ ] Create `POST /journal/entry` and `GET /journal/entries` endpoints.
-  - [ ] Define `JournalEntry` Pydantic model.
-  - [ ] Regenerate shared API client.
-- [ ] **Task 3.3.2: Implement Journal Analysis Service (Sentiment & Keywords)**
-  - [ ] Create `analysis` module and `JournalAnalysisService`.
-  - [ ] Develop asynchronous consumer for a `journal-analysis-queue`.
-  - [ ] Use `LLMInferenceService` for sentiment/keyword extraction.
-  - [ ] Update `JournalEntry` in DB with analysis results.
-- [ ] **Task 3.3.3: Implement Basic Insight Display in Frontend**
-  - [ ] Update frontend to display sentiment and keywords for journal entries.
-  - [ ] Add simple visualizations (e.g., word cloud).
+- [x] **Task 3.3.1: Implement Dedicated Journal Entry Capture & Storage**
+  - [x] Update DB schema with `JournalEntry` table.
+  - [x] Create `POST /journal/entry` and `GET /journal/entries` endpoints.
+  - [x] Define `JournalEntry` Pydantic model.
+  - [x] Regenerate shared API client.
+- [x] **Task 3.3.2: Implement Journal Analysis Service (Sentiment & Keywords)**
+  - [x] Create `analysis` module and `JournalAnalysisService`.
+  - [x] Develop asynchronous consumer for a `journal-analysis-queue`.
+  - [x] Use `LLMInferenceService` for sentiment/keyword extraction.
+  - [x] Update `JournalEntry` in DB with analysis results.
+- [x] **Task 3.3.3: Implement Basic Insight Display in Frontend**
+  - [x] Update frontend to display sentiment and keywords for journal entries.
+  - [x] Add simple visualizations (e.g., word cloud).
 
 ---
 
