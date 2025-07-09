@@ -65,4 +65,4 @@
   - [x] Create `docs/devops/testing_strategy.md`.
 - **Task 0.5.2: Define Environments and CI/CD Pipeline Stages**
   - [x] Create `docs/devops/ci_cd_strategy.md`.
-  - [ ] Create `.github/workflows/ci.yml`.
+  - [x] Create `.github/workflows/ci.yml`.
