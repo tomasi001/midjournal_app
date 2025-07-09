@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 import uuid
 
 from src.interfaces.document_ingestion_service import DocumentIngestionService
-from src.data_models.schemas import User
 from src.api.dependencies.auth import get_current_user
+from src.data_models.schemas import User, IngestionResponse
 
 
 router = APIRouter(
@@ -14,27 +13,30 @@ router = APIRouter(
 )
 
 
-class IngestTextRequest(BaseModel):
-    text: str
-
-
-@router.post("/text", status_code=202)
-def ingest_text(
-    request: IngestTextRequest,
+@router.post("/upload", response_model=IngestionResponse)
+async def upload_document(
     current_user: User = Depends(get_current_user),
+    file: UploadFile = File(...),
     ingestion_service: DocumentIngestionService = Depends(),
 ):
     """
-    Accepts raw text for ingestion and queues it for processing.
+    Accepts a document (text, image, or PDF), extracts content,
+    and queues it for ingestion.
     """
     try:
-        user_id_uuid = uuid.UUID(str(current_user.id))
-        ingestion_service.ingest_text(user_id=user_id_uuid, text=request.text)
-        return {"message": "Text ingestion request received and is being processed."}
+        file_bytes = await file.read()
+        document_id = await ingestion_service.ingest_document(
+            user_id=current_user.id,
+            file_bytes=file_bytes,
+            content_type=file.content_type,
+        )
+        return IngestionResponse(
+            message="Document upload received and is being processed.",
+            document_id=document_id,
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        # A catch-all for other potential errors during the process
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {e}"
         )

@@ -25,11 +25,11 @@
 
 ## 3.2 Expanded Input Modalities
 
-- [ ] **Task 3.2.1: Implement OCR for Image/PDF Notes**
-  - [ ] Create `OCRService` interface and `ocr` module.
-  - [ ] Implement concrete OCR service (e.g., Tesseract).
-  - [ ] Enhance ingestion service and API to handle image/PDF uploads.
-  - [ ] Feed extracted text into the asynchronous ingestion pipeline.
+- [x] **Task 3.2.1: Implement OCR for Image/PDF Notes**
+  - [x] Create `OCRService` interface and `ocr` module.
+  - [x] Implement concrete OCR service (e.g., Tesseract).
+  - [x] Enhance ingestion service and API to handle image/PDF uploads.
+  - [x] Feed extracted text into the asynchronous ingestion pipeline.
 - [ ] **Task 3.2.2: Enhance Bulk Upload for Common Document Types**
   - [ ] Create `DocumentParserService` interface and `parsing` module.
   - [ ] Implement concrete parsing service for `.docx` and `.md`.

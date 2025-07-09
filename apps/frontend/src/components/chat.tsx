@@ -122,33 +122,6 @@ export function Chat() {
           return [...prev.slice(0, -1), updatedLastMessage];
         });
       }
-
-      const finalAssistantResponse =
-        prev.find((m) => m.role === "assistant")?.content || "";
-      if (finalAssistantResponse) {
-        try {
-          const ttsResponse = await fetch("/api/tts/synthesize", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ text: finalAssistantResponse }),
-          });
-
-          if (ttsResponse.ok) {
-            const { audio_content, content_type } = await ttsResponse.json();
-            const audio = new Audio(
-              `data:${content_type};base64,${audio_content}`
-            );
-            audio.play();
-          } else {
-            toast.error("Failed to synthesize speech.");
-          }
-        } catch (error) {
-          toast.error("An error occurred during speech synthesis.");
-        }
-      }
     } catch (error) {
       toast.error("An error occurred while fetching the chat response.");
       // Clean up the empty assistant message on error

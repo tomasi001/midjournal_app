@@ -11,6 +11,9 @@ from src.vector_store.clients.qdrant import QdrantVectorStoreClient
 from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.interfaces.query_service import QueryService
 from src.query.service import QueryServiceImpl
+from src.ocr.service import TesseractOCRService
+from src.interfaces.ocr_service import OCRService
+from src.interfaces.message_queue_client import MessageQueueClient
 
 
 @asynccontextmanager
@@ -19,19 +22,22 @@ async def lifespan(app: FastAPI):
     print("Creating database tables...")
     create_tables()
     print("Database tables created.")
-    # Service Instantiation
-    rabbitmq_client = RabbitMQClient()
-    ingestion_service = DocumentIngestionServiceImpl(
-        message_queue_client=rabbitmq_client
-    )
+
+    # Service Instantiation for services that need to be singletons
+    # or have a startup lifecycle.
     embedding_service = EmbeddingService()
     vector_store_client = QdrantVectorStoreClient()
     query_service_impl = QueryServiceImpl(
         embedding_service=embedding_service, vector_store_client=vector_store_client
     )
+
     # Dependency Overrides
-    app.dependency_overrides[DocumentIngestionService] = lambda: ingestion_service
     app.dependency_overrides[QueryService] = lambda: query_service_impl
+    app.dependency_overrides[MessageQueueClient] = lambda: RabbitMQClient()
+    app.dependency_overrides[OCRService] = lambda: TesseractOCRService()
+    # DocumentIngestionService will be created by FastAPI on-demand
+    app.dependency_overrides[DocumentIngestionService] = DocumentIngestionServiceImpl
+
     yield
     # On shutdown
     print("Application shutting down.")

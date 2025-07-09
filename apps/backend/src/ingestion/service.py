@@ -2,25 +2,53 @@ import uuid
 
 from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.interfaces.message_queue_client import MessageQueueClient
+from src.interfaces.ocr_service import OCRService
+from src.ocr.service import TesseractOCRService
+from fastapi import Depends
 
 
 class DocumentIngestionServiceImpl(DocumentIngestionService):
+    def __init__(
+        self,
+        mq_client: MessageQueueClient = Depends(),
+        ocr_service: OCRService = Depends(),
+    ):
+        self.mq_client = mq_client
+        self.ocr_service = ocr_service
+        # In a real app, 'ingestion-queue' would come from config
+        self.queue_name = "ingestion-queue"
 
-    INGESTION_QUEUE_NAME = "ingestion-queue"
+    async def ingest_document(
+        self, user_id: uuid.UUID, file_bytes: bytes, content_type: str
+    ) -> str:
+        text_content = ""
+        if "text" in content_type:
+            text_content = file_bytes.decode("utf-8")
+        elif "image" in content_type:
+            text_content = await self.ocr_service.extract_text_from_image(file_bytes)
+        elif "pdf" in content_type:
+            text_content = await self.ocr_service.extract_text_from_pdf(file_bytes)
+        else:
+            raise ValueError("Unsupported file type")
 
-    def __init__(self, message_queue_client: MessageQueueClient):
-        self._mq_client = message_queue_client
+        if not text_content.strip():
+            raise ValueError("Could not extract text from the file.")
 
-    def ingest_text(self, user_id: uuid.UUID, text: str):
-        """
-        Publishes a message to the ingestion queue with the user_id and text.
-        """
-        if not text:
-            raise ValueError("Cannot ingest empty text.")
-
-        message = {"user_id": str(user_id), "text": text}
-
-        self._mq_client.publish(queue_name=self.INGESTION_QUEUE_NAME, message=message)
-        print(
-            f"Published ingestion task for user {user_id} to queue '{self.INGESTION_QUEUE_NAME}'"
+        return await self.process_and_queue_text(
+            user_id=str(user_id), text=text_content
         )
+
+    async def process_and_queue_text(self, user_id: str, text: str) -> str:
+        document_id = str(uuid.uuid4())
+        message = {
+            "user_id": user_id,
+            "document_id": document_id,
+            "text": text,
+        }
+        try:
+            self.mq_client.publish(queue_name=self.queue_name, message=message)
+            print(f" [x] Sent message to queue '{self.queue_name}'")
+        except Exception as e:
+            print(f"Error publishing to queue: {e}")
+            raise
+        return document_id

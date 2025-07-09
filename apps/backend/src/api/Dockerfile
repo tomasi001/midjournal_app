@@ -18,6 +18,12 @@ RUN poetry config virtualenvs.in-project true && \
 # --- Final Stage ---
 FROM python:3.11-slim AS final
 
+# Install Tesseract OCR engine and image processing libraries
+# These are needed at runtime, not just during the build.
+RUN apt-get update && \
+    apt-get install -y tesseract-ocr libjpeg-dev zlib1g-dev && \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy the virtual environment from the builder stage
