@@ -30,11 +30,11 @@
   - [x] Implement concrete OCR service (e.g., Tesseract).
   - [x] Enhance ingestion service and API to handle image/PDF uploads.
   - [x] Feed extracted text into the asynchronous ingestion pipeline.
-- [ ] **Task 3.2.2: Enhance Bulk Upload for Common Document Types**
-  - [ ] Create `DocumentParserService` interface and `parsing` module.
-  - [ ] Implement concrete parsing service for `.docx` and `.md`.
-  - [ ] Enhance ingestion service and API to handle `.docx`/`.md` uploads.
-  - [ ] Update frontend to accept new file types.
+- [x] **Task 3.2.2: Enhance Bulk Upload for Common Document Types**
+  - [x] Create `DocumentParserService` interface and `parsing` module.
+  - [x] Implement concrete parsing service for `.docx` and `.md`.
+  - [x] Enhance ingestion service and API to handle `.docx`/`.md` uploads.
+  - [x] Update frontend to accept new file types.
 
 ---
 

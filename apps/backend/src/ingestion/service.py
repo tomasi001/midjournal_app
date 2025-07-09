@@ -3,7 +3,7 @@ import uuid
 from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.interfaces.message_queue_client import MessageQueueClient
 from src.interfaces.ocr_service import OCRService
-from src.ocr.service import TesseractOCRService
+from src.interfaces.document_parser_service import DocumentParserService
 from fastapi import Depends
 
 
@@ -12,9 +12,11 @@ class DocumentIngestionServiceImpl(DocumentIngestionService):
         self,
         mq_client: MessageQueueClient,
         ocr_service: OCRService,
+        parser_service: DocumentParserService,
     ):
         self.mq_client = mq_client
         self.ocr_service = ocr_service
+        self.parser_service = parser_service
         # In a real app, 'ingestion-queue' would come from config
         self.queue_name = "ingestion-queue"
 
@@ -22,14 +24,20 @@ class DocumentIngestionServiceImpl(DocumentIngestionService):
         self, user_id: uuid.UUID, file_bytes: bytes, content_type: str
     ) -> str:
         text_content = ""
-        if "text" in content_type:
+        if "text" in content_type and content_type != "text/markdown":
             text_content = file_bytes.decode("utf-8")
         elif "image" in content_type:
             text_content = await self.ocr_service.extract_text_from_image(file_bytes)
         elif "pdf" in content_type:
             text_content = await self.ocr_service.extract_text_from_pdf(file_bytes)
+        elif (
+            content_type
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            or content_type == "text/markdown"
+        ):
+            text_content = self.parser_service.parse(file_bytes, content_type)
         else:
-            raise ValueError("Unsupported file type")
+            raise ValueError(f"Unsupported file type: {content_type}")
 
         if not text_content.strip():
             raise ValueError("Could not extract text from the file.")

@@ -18,11 +18,13 @@ class RabbitMQClient(MessageQueueClient):
     def _connect(self):
         """Establishes a connection and a channel."""
         try:
-            self.connection = pika.BlockingConnection(
-                pika.URLParameters(self.rabbitmq_url)
-            )
+            # Add a heartbeat to prevent idle connection timeouts
+            params = pika.URLParameters(self.rabbitmq_url)
+            params.heartbeat = 600  # seconds (10 minutes)
+
+            self.connection = pika.BlockingConnection(params)
             self.channel = self.connection.channel()
-            print("Successfully connected to RabbitMQ")
+            print("Successfully connected to RabbitMQ with heartbeat.")
         except pika.exceptions.AMQPConnectionError as e:
             print(f"Failed to connect to RabbitMQ: {e}")
             # In a real app, you'd have a reconnection strategy here

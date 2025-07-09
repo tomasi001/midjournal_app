@@ -20,7 +20,7 @@ import {
 function JournalPage() {
   const { token, logout } = useAuth();
   const [text, setText] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,9 +67,8 @@ function JournalPage() {
   }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      setFile(acceptedFiles[0]);
-    }
+    // Replace the list of files with the new selection
+    setFiles(acceptedFiles);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -79,8 +78,11 @@ function JournalPage() {
       "application/pdf": [".pdf"],
       "image/png": [".png"],
       "image/jpeg": [".jpg", ".jpeg"],
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        [".docx"],
+      "text/markdown": [".md"],
     },
-    multiple: false,
+    multiple: true,
   });
 
   const handleTextSubmit = async () => {
@@ -97,17 +99,36 @@ function JournalPage() {
   };
 
   const handleFileSubmit = async () => {
-    if (!file) {
-      toast.error("Please select a file to upload.");
+    if (files.length === 0) {
+      toast.error("Please select one or more files to upload.");
       return;
     }
-    await handleSubmit(file);
-    setFile(null);
+    setIsLoading(true);
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const file of files) {
+      const success = await handleSubmit(file);
+      if (success) {
+        successCount++;
+      } else {
+        errorCount++;
+      }
+    }
+
+    if (errorCount === 0) {
+      toast.success(`All ${successCount} files uploaded successfully!`);
+    } else {
+      toast.warning(`${successCount} files uploaded, ${errorCount} failed.`);
+    }
+
+    setFiles([]);
     setIsModalOpen(false);
+    setIsLoading(false);
   };
 
-  const handleSubmit = async (fileToUpload: File) => {
-    setIsLoading(true);
+  const handleSubmit = async (fileToUpload: File): Promise<boolean> => {
     const formData = new FormData();
     formData.append("file", fileToUpload);
 
@@ -123,15 +144,20 @@ function JournalPage() {
       const result = await response.json();
 
       if (response.ok) {
-        toast.success(result.message || "Content submitted successfully.");
+        toast.success(
+          result.message || `'${fileToUpload.name}' submitted successfully.`
+        );
+        return true;
       } else {
-        toast.error(`Submission failed: ${result.detail || "Unknown error"}`);
+        toast.error(
+          `'${fileToUpload.name}' failed: ${result.detail || "Unknown error"}`
+        );
+        return false;
       }
     } catch (error) {
-      toast.error("An error occurred during submission.");
+      toast.error(`An error occurred submitting '${fileToUpload.name}'.`);
       console.error(error);
-    } finally {
-      setIsLoading(false);
+      return false;
     }
   };
 
@@ -197,20 +223,29 @@ function JournalPage() {
                         </p>
                       )}
                       <p className="text-xs text-muted-foreground mt-2">
-                        Supported: TXT, PDF, PNG, JPG
+                        Supported: TXT, PDF, PNG, JPG, DOCX, MD
                       </p>
                     </div>
-                    {file && (
-                      <div className="mt-4 text-center">
-                        <p>Selected file: {file.name}</p>
+                    {files.length > 0 && (
+                      <div className="mt-4 text-sm text-center">
+                        <p className="font-semibold">Selected files:</p>
+                        <ul className="list-disc list-inside max-h-32 overflow-y-auto">
+                          {files.map((file, index) => (
+                            <li key={index} className="truncate">
+                              {file.name}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                     <Button
                       onClick={handleFileSubmit}
-                      disabled={!file || isLoading}
+                      disabled={files.length === 0 || isLoading}
                       className="w-full mt-4"
                     >
-                      {isLoading ? "Uploading..." : "Submit File"}
+                      {isLoading
+                        ? "Uploading..."
+                        : `Submit ${files.length} File(s)`}
                     </Button>
                   </DialogContent>
                 </Dialog>
