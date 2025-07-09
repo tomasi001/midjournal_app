@@ -62,3 +62,21 @@ class JournalEntry(BaseModel):
     # The following fields are populated by the analysis service
     analysis_summary: Optional[str] = None
     generated_image_url: Optional[str] = None
+
+
+class IngestionResponse(BaseModel):
+    message: str
+    document_id: str
+
+
+class TTSRequest(BaseModel):
+    text: str
+
+
+class TTSResponse(BaseModel):
+    audio_content: str  # Base64 encoded audio
+    content_type: str  # e.g., "audio/wav"
+
+
+class QueryRequest(BaseModel):
+    text: str
