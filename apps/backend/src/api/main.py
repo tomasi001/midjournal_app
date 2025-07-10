@@ -1,20 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
 from contextlib import asynccontextmanager
 
 from src.db.database import create_tables
 from src.api.routers import auth, ingestion, query, tts, journal, suggestions
-from src.ingestion.service import DocumentIngestionServiceImpl
-from src.message_queue.client import RabbitMQClient
-from src.text_processing.service import EmbeddingService
-from src.vector_store.clients.qdrant import QdrantVectorStoreClient
-from src.interfaces.document_ingestion_service import DocumentIngestionService
-from src.interfaces.query_service import QueryService
-from src.query.service import QueryServiceImpl
-from src.ocr.service import TesseractOCRService
-from src.interfaces.ocr_service import OCRService
-from src.interfaces.message_queue_client import MessageQueueClient
 
 
 @asynccontextmanager

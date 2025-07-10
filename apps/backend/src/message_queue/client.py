@@ -1,8 +1,6 @@
 import pika
 import json
-import os
 import threading
-from typing import Callable, Dict
 from contextlib import contextmanager
 
 from src.interfaces.message_queue_client import MessageQueueClient

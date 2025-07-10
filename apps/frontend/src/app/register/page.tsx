@@ -42,7 +42,7 @@ export default function RegisterPage() {
           `Registration failed: ${errorData.detail || "Unknown error"}`
         );
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from fastapi.responses import Response
 import base64
 
 from src.data_models.schemas import TTSRequest, TTSResponse

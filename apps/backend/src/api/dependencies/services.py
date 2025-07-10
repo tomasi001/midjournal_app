@@ -9,7 +9,7 @@ from src.text_processing.service import TextProcessingService
 from src.vector_store.clients.qdrant import QdrantVectorStoreClient
 from src.query.service import QueryServiceImpl
 from src.journal.service import JournalService
-from src.db.database import SessionLocal, get_db
+from src.db.database import get_db
 from src.suggestions.service import LLMQuerySuggestionService
 from src.llm.service import OllamaInferenceService
 
@@ -44,15 +44,6 @@ def get_document_ingestion_service():
         ocr_service=ocr_service_singleton,
         parser_service=parser_service_singleton,
     )
-
-
-# --- Database Session ---
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 # --- Service Dependency Providers ---

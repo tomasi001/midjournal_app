@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/context/auth-context";
 import { Mic } from "lucide-react";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AudioPlayer } from "./audio-player";
 
@@ -26,7 +26,7 @@ export function Chat() {
   const [isRecording, setIsRecording] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -41,14 +41,16 @@ export function Chat() {
         recognitionRef.current.interimResults = false;
         recognitionRef.current.lang = "en-US";
 
-        recognitionRef.current.onresult = (event: any) => {
+        recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
           const transcript = event.results[0][0].transcript;
           setInput(transcript);
           setIsRecording(false);
           toast.success("Speech recognized.");
         };
 
-        recognitionRef.current.onerror = (event: any) => {
+        recognitionRef.current.onerror = (
+          event: SpeechRecognitionErrorEvent
+        ) => {
           console.error("Speech recognition error", event.error);
           toast.error(`Speech recognition error: ${event.error}`);
           setIsRecording(false);
@@ -72,13 +74,7 @@ export function Chat() {
     }
   }, [messages, isLoading]);
 
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages, isLoading]);
-
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = useCallback(async () => {
     if (!token) return;
     try {
       const response = await fetch("/api/suggestions", {
@@ -93,11 +89,17 @@ export function Chat() {
     } catch (error) {
       console.error("Error fetching suggestions:", error);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchSuggestions();
-  }, [token]);
+  }, [fetchSuggestions]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading]);
 
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
@@ -155,7 +157,7 @@ export function Chat() {
           return [...prev.slice(0, -1), updatedLastMessage];
         });
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while fetching the chat response.");
       // Clean up the empty assistant message on error
       setMessages((prev) =>
@@ -207,7 +209,7 @@ export function Chat() {
       } else {
         toast.error("Failed to synthesize speech.");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred during speech synthesis.");
     }
   };

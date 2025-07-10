@@ -4,7 +4,6 @@ from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.interfaces.message_queue_client import MessageQueueClient
 from src.interfaces.ocr_service import OCRService
 from src.interfaces.document_parser_service import DocumentParserService
-from fastapi import Depends
 
 
 class DocumentIngestionServiceImpl(DocumentIngestionService):

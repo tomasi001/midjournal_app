@@ -1,6 +1,5 @@
 from typing import List
 from fastapi import APIRouter, Depends
-from uuid import UUID
 
 from src.data_models.schemas import (
     JournalEntry,

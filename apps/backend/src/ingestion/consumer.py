@@ -4,7 +4,6 @@ import uuid
 import json
 import logging
 import time
-from sqlalchemy.orm import Session
 from typing import Dict
 
 # Add the project root to the Python path to allow for absolute imports
@@ -14,7 +13,6 @@ from src.message_queue.client import RabbitMQClient
 from src.text_processing.service import TextProcessingService
 from src.vector_store.clients.qdrant import QdrantVectorStoreClient
 from src.db.database import SessionLocal
-from src.db.models import Document
 
 # Configure logging
 logging.basicConfig(

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
-import uuid
 
 from src.interfaces.document_ingestion_service import DocumentIngestionService
 from src.api.dependencies.auth import get_current_user

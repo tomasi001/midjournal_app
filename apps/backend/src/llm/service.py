@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Any, AsyncGenerator, Optional
+from typing import List, Dict, Any, AsyncGenerator
 import ollama
 
 from src.interfaces.llm_inference_service import LLMInferenceService
