@@ -2,12 +2,16 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import List, Dict, Any
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
 
 from src.interfaces.query_service import QueryService
 from src.data_models.schemas import User
 from src.api.dependencies.auth import get_current_user
 from src.api.dependencies.services import get_query_service
 from src.llm.service import OllamaInferenceService
+from src.db.database import get_db
+from src.db import models as db_models
+
 
 router = APIRouter(
     prefix="/query",
@@ -47,6 +51,7 @@ async def perform_chat_query(
     request: QueryRequest,
     current_user: User = Depends(get_current_user),
     query_service: QueryService = Depends(get_query_service),
+    db: Session = Depends(get_db),
 ):
     """
     Accepts a user's query, retrieves context, and streams a response from an LLM.
@@ -65,4 +70,17 @@ async def perform_chat_query(
         model_config={},  # Passing an empty dict for now
     )
 
-    return StreamingResponse(response_stream, media_type="text/plain")
+    async def stream_and_save_history():
+        full_response = ""
+        async for chunk in response_stream:
+            full_response += chunk
+            yield chunk
+
+        # After streaming is complete, save the chat history.
+        chat_entry = db_models.ChatHistory(
+            user_id=current_user.id, query=request.text, response=full_response
+        )
+        db.add(chat_entry)
+        db.commit()
+
+    return StreamingResponse(stream_and_save_history(), media_type="text/plain")

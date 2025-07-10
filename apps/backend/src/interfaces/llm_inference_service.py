@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, AsyncGenerator
+from typing import AsyncGenerator, List, Dict, Any, Optional
 
 
 class LLMInferenceService(ABC):
@@ -24,5 +24,18 @@ class LLMInferenceService(ABC):
         yield
 
     @abstractmethod
-    async def generate_response(self, prompt: str, model_config: Dict[str, Any]) -> str:
+    async def generate_response(
+        self,
+        prompt: str,
+        model_config: Dict[str, Any],
+    ) -> str:
+        pass
+
+    @abstractmethod
+    async def generate_structured_response(
+        self,
+        prompt: str,
+        model_config: Dict[str, Any],
+        json_schema: Dict[str, Any],
+    ) -> str:
         pass

@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict, Any, AsyncGenerator
+from typing import List, Dict, Any, AsyncGenerator, Optional
 import ollama
 
 from src.interfaces.llm_inference_service import LLMInferenceService
@@ -8,8 +8,7 @@ from src.llm.prompts import SYSTEM_PROMPT
 
 class OllamaInferenceService(LLMInferenceService):
     def __init__(self):
-        ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        self.client = ollama.AsyncClient(host=ollama_host)
+        self.ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
     async def generate_response_stream(
         self, query: str, context: List[str], user_id: str, model_config: Dict[str, Any]
@@ -22,7 +21,8 @@ class OllamaInferenceService(LLMInferenceService):
         prompt = SYSTEM_PROMPT.format(context_str=context_str, query=query)
 
         try:
-            stream = await self.client.chat(
+            client = ollama.AsyncClient(host=self.ollama_host)
+            stream = await client.chat(
                 model="llama3",
                 messages=[{"role": "user", "content": prompt}],
                 stream=True,
@@ -43,10 +43,34 @@ class OllamaInferenceService(LLMInferenceService):
         Generates a non-streaming response from Ollama.
         """
         try:
-            response = await self.client.chat(
+            client = ollama.AsyncClient(host=self.ollama_host)
+            response = await client.chat(
                 model="llama3",
                 messages=[{"role": "user", "content": prompt}],
                 stream=False,
+            )
+            return response["message"]["content"]
+        except Exception as e:
+            error_message = f"An error occurred while communicating with Ollama: {e}"
+            print(f"ERROR: {error_message}")
+            return error_message
+
+    async def generate_structured_response(
+        self,
+        prompt: str,
+        model_config: Dict[str, Any],
+        json_schema: Dict[str, Any],
+    ) -> str:
+        """
+        Generates a non-streaming response from Ollama, asking for JSON output.
+        """
+        try:
+            client = ollama.AsyncClient(host=self.ollama_host)
+            response = await client.chat(
+                model="llama3",
+                messages=[{"role": "user", "content": prompt}],
+                stream=False,
+                format=json_schema,
             )
             return response["message"]["content"]
         except Exception as e:

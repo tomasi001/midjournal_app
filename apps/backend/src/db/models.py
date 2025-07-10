@@ -19,6 +19,7 @@ class User(Base):
 
     documents = relationship("Document", back_populates="owner")
     journal_entries = relationship("JournalEntry", back_populates="owner")
+    chat_history = relationship("ChatHistory", back_populates="user")
 
 
 class Document(Base):
@@ -50,3 +51,15 @@ class JournalEntry(Base):
     generated_image_url = Column(Text)
 
     owner = relationship("User", back_populates="journal_entries")
+
+
+class ChatHistory(Base):
+    __tablename__ = "chat_history"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    query = Column(Text, nullable=False)
+    response = Column(Text, nullable=False)
+    timestamp = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    user = relationship("User", back_populates="chat_history")

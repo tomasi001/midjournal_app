@@ -93,3 +93,25 @@ class TTSResponse(BaseModel):
 
 class QueryRequest(BaseModel):
     text: str
+
+
+class ChatHistoryBase(BaseModel):
+    query: str
+    response: str
+
+
+class ChatHistoryCreate(ChatHistoryBase):
+    pass
+
+
+class ChatHistory(ChatHistoryBase):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class SuggestionsResponse(BaseModel):
+    suggestions: List[str]

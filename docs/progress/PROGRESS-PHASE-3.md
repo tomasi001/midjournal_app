@@ -58,15 +58,15 @@
 
 ## 3.4 Personalized Query Suggestions
 
-- [ ] **Task 3.4.1: Implement Query Suggestion Service**
-  - [ ] Update DB schema with `ChatHistory` table.
-  - [ ] Create `QuerySuggestionService` interface and `suggestions` module.
-  - [ ] Create `GET /suggestions/query` endpoint.
-  - [ ] Use LLM to generate suggestions based on chat history/context.
-  - [ ] Regenerate shared API client.
-- [ ] **Task 3.4.2: Integrate Suggestions into Frontend Chat Interface**
-  - [ ] Display suggestions as clickable buttons in the UI.
-  - [ ] Clicking a suggestion populates input or sends query.
+- [x] **Task 3.4.1: Implement Query Suggestion Service**
+  - [x] Update DB schema with `ChatHistory` table.
+  - [x] Create `QuerySuggestionService` interface and `suggestions` module.
+  - [x] Create `GET /suggestions/query` endpoint.
+  - [x] Use LLM to generate suggestions based on chat history/context.
+  - [x] Regenerate shared API client.
+- [x] **Task 3.4.2: Integrate Suggestions into Frontend Chat Interface**
+  - [x] Display suggestions as clickable buttons in the UI.
+  - [x] Clicking a suggestion populates input or sends query.
 
 ---
 

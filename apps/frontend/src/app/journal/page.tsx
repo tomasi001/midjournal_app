@@ -113,14 +113,15 @@ function JournalPage() {
   }, [fetchEntries]);
 
   useEffect(() => {
-    // Check if any entries are still being analyzed
-    const isAnalysisPending = entries.some((entry) => !entry.sentiment);
+    // Check if any entries are still being analyzed. We'll use the summary field
+    // as an indicator that the analysis is complete.
+    const isAnalysisPending = entries.some((entry) => !entry.summary);
 
     // If analysis is pending, start polling
     if (isAnalysisPending && !pollingIntervalRef.current) {
       pollingIntervalRef.current = setInterval(() => {
         fetchEntries();
-      }, 5000); // Poll every 5 seconds
+      }, 10000); // Poll every 10 seconds
     } else if (!isAnalysisPending && pollingIntervalRef.current) {
       // If no analysis is pending, stop polling
       clearInterval(pollingIntervalRef.current);

@@ -1,6 +1,7 @@
 import pika
 import json
 import os
+import threading
 from typing import Callable, Dict
 from contextlib import contextmanager
 
@@ -10,21 +11,27 @@ from src.interfaces.message_queue_client import MessageQueueClient
 class RabbitMQClient(MessageQueueClient):
     def __init__(self, rabbitmq_url="amqp://guest:guest@rabbitmq/"):
         self.rabbitmq_url = rabbitmq_url
+        self._connection = None
+        self._channel = None
+
+    def _connect(self):
+        """Establishes connection and channel."""
+        if not self._connection or self._connection.is_closed:
+            self._connection = pika.BlockingConnection(
+                pika.URLParameters(self.rabbitmq_url)
+            )
+            self._channel = self._connection.channel()
+            print("Successfully connected to RabbitMQ.")
 
     @contextmanager
-    def _get_connection(self):
-        connection = None
-        try:
-            connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
-            yield connection
-        finally:
-            if connection and connection.is_open:
-                connection.close()
+    def _get_channel(self):
+        """Provides a channel, ensuring connection is active."""
+        self._connect()
+        yield self._channel
 
     def publish(self, queue_name: str, message: dict):
         try:
-            with self._get_connection() as connection:
-                channel = connection.channel()
+            with self._get_channel() as channel:
                 channel.queue_declare(queue=queue_name, durable=True)
                 channel.basic_publish(
                     exchange="",
@@ -35,40 +42,46 @@ class RabbitMQClient(MessageQueueClient):
                     ),
                 )
         except Exception as e:
-            # In a real app, you'd have more robust error handling.
             print(f"Failed to publish message: {e}")
-            # Depending on requirements, you might want to re-raise the exception
-            # or handle it in a specific way (e.g., retry logic).
+            self.close()  # Close connection on failure
+
+    def _process_message(self, ch, method, properties, body, callback, deps):
+        """The actual message processing logic to be run in a thread."""
+        try:
+            callback(self._connection, ch, method, properties, body, deps)
+        except Exception as e:
+            print(f"Error processing message: {e}")
 
     def subscribe(self, queue_name: str, callback, get_dependencies_func=None):
-        # This method is for long-running consumers, so it manages its own connection.
-        connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
-        channel = connection.channel()
-        channel.queue_declare(queue=queue_name, durable=True)
-
+        self._connect()
+        self._channel.queue_declare(queue=queue_name, durable=True)
         print(
             f" [*] Waiting for messages in queue '{queue_name}'. To exit press CTRL+C"
         )
 
-        # Pass a wrapper callback that includes dependencies
         deps = get_dependencies_func() if get_dependencies_func else {}
 
-        def callback_with_deps(ch, method, properties, body):
-            callback(ch, method, properties, body, deps)
+        def on_message(ch, method, properties, body):
+            thread = threading.Thread(
+                target=self._process_message,
+                args=(ch, method, properties, body, callback, deps),
+            )
+            thread.start()
 
-        channel.basic_consume(queue=queue_name, on_message_callback=callback_with_deps)
+        self._channel.basic_consume(
+            queue=queue_name, on_message_callback=on_message, auto_ack=False
+        )
 
         try:
-            channel.start_consuming()
+            self._channel.start_consuming()
         except KeyboardInterrupt:
             print("Consumer stopped.")
         finally:
-            connection.close()
-            # Clean up dependencies if they have close methods
+            self.close()
             if "db_session" in deps and hasattr(deps.get("db_session"), "close"):
                 deps["db_session"].close()
 
     def close(self):
-        # Since connections are now short-lived, this might not be needed
-        # for the publisher, but it's good practice to have.
-        pass
+        if self._connection and self._connection.is_open:
+            self._connection.close()
+            print("RabbitMQ connection closed.")

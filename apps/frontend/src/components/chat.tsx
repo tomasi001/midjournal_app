@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect, Fragment } from "react";
-import { useAuth } from "@/context/auth-context";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/context/auth-context";
 import { Mic } from "lucide-react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { AudioPlayer } from "./audio-player";
 
 interface Message {
@@ -24,8 +24,10 @@ export function Chat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const recognitionRef = useRef<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +71,37 @@ export function Chat() {
       });
     }
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading]);
+
+  const fetchSuggestions = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch("/api/suggestions", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data);
+      }
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuggestions();
+  }, [token]);
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -144,6 +177,8 @@ export function Chat() {
         }
         return currentMessages; // No change to state, just reading it
       });
+      // Fetch new suggestions after bot replies
+      fetchSuggestions();
     }
   };
 
@@ -219,6 +254,7 @@ export function Chat() {
                 )}
               </Fragment>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </CardContent>
@@ -242,6 +278,22 @@ export function Chat() {
           >
             <Mic className={`h-4 w-4 ${isRecording ? "text-red-500" : ""}`} />
           </Button>
+        </div>
+        <div className="mt-4">
+          {suggestions.length > 0 && !isLoading && (
+            <div className="flex flex-wrap gap-2 mb-2 justify-center">
+              {suggestions.map((s, i) => (
+                <Button
+                  key={i}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSuggestionClick(s)}
+                >
+                  {s}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Card>
