@@ -71,30 +71,25 @@ def callback(ch, method, properties, body, deps):
             f"Database updated for entry_id: {entry_id} in {update_time:.2f}s."
         )
 
-        # Acknowledging the message directly from the worker thread.
-        # This is generally safe with BlockingConnection as long as we're not
-        # performing many concurrent channel operations from different threads.
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-
         total_time = time.time() - start_time
         logging.info(
-            f"Successfully processed and ACKed entry_id: {entry_id}. Total time: {total_time:.2f}s."
+            f"Successfully processed entry_id: {entry_id}. Total time: {total_time:.2f}s."
         )
 
     except json.JSONDecodeError as e:
         logging.error(f"Failed to decode JSON body: {body}. Error: {e}", exc_info=True)
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+        raise e
     except (ValueError, KeyError) as e:
         logging.error(
             f"Message missing required fields: {body}. Error: {e}", exc_info=True
         )
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+        raise e
     except Exception as e:
         logging.error(
             f"Failed to process message for entry_id: {entry_id}. Error: {e}",
             exc_info=True,
         )
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+        raise e
 
 
 def main():

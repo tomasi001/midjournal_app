@@ -49,14 +49,26 @@ class RabbitMQClient(MessageQueueClient):
                 connection.close()
                 print("RabbitMQ connection for publishing closed.")
 
-    def _process_message(self, ch, method, properties, body, callback, deps):
-        """The actual message processing logic to be run in a thread."""
+    def _process_message(
+        self, connection, ch, method, properties, body, callback, deps
+    ):
+        """
+        Processes the message in a separate thread and schedules the ack/nack
+        on the main thread.
+        """
         try:
+            # Execute the user-defined callback to process the message
             callback(ch, method, properties, body, deps)
+            # Schedule the acknowledgment on the main I/O thread
+            connection.add_callback_threadsafe(
+                lambda: ch.basic_ack(delivery_tag=method.delivery_tag)
+            )
         except Exception as e:
             print(f"Error processing message: {e}")
-        # The main consumer loop will handle ACK/NACK based on this
-        # It's important that the callback function implements the ACK/NACK logic
+            # Schedule the negative acknowledgment on the main I/O thread
+            connection.add_callback_threadsafe(
+                lambda: ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+            )
 
     def subscribe(self, queue_name: str, callback, get_dependencies_func=None):
         connection = None
@@ -99,7 +111,7 @@ class RabbitMQClient(MessageQueueClient):
                 # might be more appropriate.
                 thread = threading.Thread(
                     target=self._process_message,
-                    args=(ch, method, properties, body, callback, deps),
+                    args=(connection, ch, method, properties, body, callback, deps),
                 )
                 thread.start()
 

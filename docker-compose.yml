@@ -57,6 +57,7 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
+    restart: unless-stopped
 
   db:
     image: postgres:15-alpine
@@ -112,8 +113,30 @@ services:
       timeout: 5s
       retries: 5
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./apps/backend/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "9080:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./apps/backend/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+
 volumes:
   db_data:
   qdrant_data:
   rabbitmq_data:
   ollama_data:
+  grafana_data:

@@ -9,7 +9,7 @@ from src.llm.prompts import SYSTEM_PROMPT
 class OllamaInferenceService(LLMInferenceService):
     def __init__(self):
         self.ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        self.model = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
+        self.model = os.getenv("OLLAMA_MODEL", "gemma3n:e4b")
 
     async def generate_response_stream(
         self, query: str, context: List[str], user_id: str, model_config: Dict[str, Any]
