@@ -1,7 +1,6 @@
 import pika
 import json
 import threading
-from contextlib import contextmanager
 
 from src.interfaces.message_queue_client import MessageQueueClient
 
