@@ -23,7 +23,9 @@ class OllamaInferenceService(LLMInferenceService):
         try:
             client = ollama.AsyncClient(host=self.ollama_host)
             stream = await client.chat(
-                model="llama3",
+                model="llama3.2:latest",
+                # model="llama3",
+                # model="gemma3n:e4b",
                 messages=[{"role": "user", "content": prompt}],
                 stream=True,
             )
@@ -45,7 +47,9 @@ class OllamaInferenceService(LLMInferenceService):
         try:
             client = ollama.AsyncClient(host=self.ollama_host)
             response = await client.chat(
-                model="llama3",
+                model="llama3.2:latest",
+                # model="llama3",
+                # model="gemma3n:e4b",
                 messages=[{"role": "user", "content": prompt}],
                 stream=False,
             )
@@ -67,7 +71,9 @@ class OllamaInferenceService(LLMInferenceService):
         try:
             client = ollama.AsyncClient(host=self.ollama_host)
             response = await client.chat(
-                model="llama3",
+                model="llama3.2:latest",
+                # model="llama3",
+                # model="gemma3n:e4b",
                 messages=[{"role": "user", "content": prompt}],
                 stream=False,
                 format=json_schema,

@@ -9,77 +9,83 @@ from src.interfaces.message_queue_client import MessageQueueClient
 class RabbitMQClient(MessageQueueClient):
     def __init__(self, rabbitmq_url="amqp://guest:guest@rabbitmq/"):
         self.rabbitmq_url = rabbitmq_url
-        self._connection = None
-        self._channel = None
-
-    def _connect(self):
-        """Establishes connection and channel."""
-        if not self._connection or self._connection.is_closed:
-            self._connection = pika.BlockingConnection(
-                pika.URLParameters(self.rabbitmq_url)
-            )
-            self._channel = self._connection.channel()
-            print("Successfully connected to RabbitMQ.")
-
-    @contextmanager
-    def _get_channel(self):
-        """Provides a channel, ensuring connection is active."""
-        self._connect()
-        yield self._channel
 
     def publish(self, queue_name: str, message: dict):
+        connection = None
         try:
-            with self._get_channel() as channel:
-                channel.queue_declare(queue=queue_name, durable=True)
-                channel.basic_publish(
-                    exchange="",
-                    routing_key=queue_name,
-                    body=json.dumps(message),
-                    properties=pika.BasicProperties(
-                        delivery_mode=2,  # make message persistent
-                    ),
-                )
+            connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
+            channel = connection.channel()
+            channel.queue_declare(queue=queue_name, durable=True)
+            channel.basic_publish(
+                exchange="",
+                routing_key=queue_name,
+                body=json.dumps(message),
+                properties=pika.BasicProperties(
+                    delivery_mode=2,  # make message persistent
+                ),
+            )
+            print(f"Successfully published message to queue '{queue_name}'")
+        except pika.exceptions.AMQPConnectionError as e:
+            print(f"Failed to connect to RabbitMQ: {e}")
+            # Depending on the use case, you might want to raise the exception
+            # or implement a retry mechanism.
         except Exception as e:
             print(f"Failed to publish message: {e}")
-            self.close()  # Close connection on failure
+        finally:
+            if connection and connection.is_open:
+                connection.close()
+                print("RabbitMQ connection for publishing closed.")
 
     def _process_message(self, ch, method, properties, body, callback, deps):
         """The actual message processing logic to be run in a thread."""
         try:
-            callback(self._connection, ch, method, properties, body, deps)
+            callback(ch, method, properties, body, deps)
         except Exception as e:
             print(f"Error processing message: {e}")
+        # The main consumer loop will handle ACK/NACK based on this
+        # It's important that the callback function implements the ACK/NACK logic
 
     def subscribe(self, queue_name: str, callback, get_dependencies_func=None):
-        self._connect()
-        self._channel.queue_declare(queue=queue_name, durable=True)
-        print(
-            f" [*] Waiting for messages in queue '{queue_name}'. To exit press CTRL+C"
-        )
-
-        deps = get_dependencies_func() if get_dependencies_func else {}
-
-        def on_message(ch, method, properties, body):
-            thread = threading.Thread(
-                target=self._process_message,
-                args=(ch, method, properties, body, callback, deps),
-            )
-            thread.start()
-
-        self._channel.basic_consume(
-            queue=queue_name, on_message_callback=on_message, auto_ack=False
-        )
-
+        connection = None
         try:
-            self._channel.start_consuming()
+            connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
+            channel = connection.channel()
+            channel.queue_declare(queue=queue_name, durable=True)
+            print(
+                f" [*] Waiting for messages in queue '{queue_name}'. To exit press CTRL+C"
+            )
+
+            deps = get_dependencies_func() if get_dependencies_func else {}
+
+            def on_message(ch, method, properties, body):
+                # Using a thread to process messages to avoid blocking the I/O loop
+                # This is a simple approach. For more complex scenarios, a pool of workers
+                # might be more appropriate.
+                thread = threading.Thread(
+                    target=self._process_message,
+                    args=(ch, method, properties, body, callback, deps),
+                )
+                thread.start()
+
+            channel.basic_consume(
+                queue=queue_name, on_message_callback=on_message, auto_ack=False
+            )
+
+            channel.start_consuming()
+
         except KeyboardInterrupt:
-            print("Consumer stopped.")
+            print("Consumer stopped by user.")
+        except pika.exceptions.AMQPConnectionError as e:
+            print(f"Failed to connect to RabbitMQ: {e}")
+            # Implement reconnection logic if necessary
         finally:
-            self.close()
+            if connection and connection.is_open:
+                connection.close()
+                print("RabbitMQ connection for subscribing closed.")
             if "db_session" in deps and hasattr(deps.get("db_session"), "close"):
                 deps["db_session"].close()
 
     def close(self):
-        if self._connection and self._connection.is_open:
-            self._connection.close()
-            print("RabbitMQ connection closed.")
+        # This method is kept for interface compliance but the logic is now handled
+        # within publish and subscribe methods.
+        pass

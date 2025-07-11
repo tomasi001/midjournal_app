@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
 import { withAuth } from "@/components/with-auth";
 import { Button } from "@/components/ui/button";
-import { Chat } from "@/components/chat";
 import { toast } from "sonner";
 import { UploadCloud, Mic, FileUp } from "lucide-react";
 import { useDropzone } from "react-dropzone";
@@ -353,9 +352,12 @@ function JournalPage() {
           <h2 className="text-2xl font-bold mb-4">Past Entries</h2>
           <JournalEntriesList entries={entries} isLoading={isEntriesLoading} />
         </div>
-        <div className="md:col-span-2">
+        {/*
+        // NOTE: CHAT REMOVED
+         // import { Chat } from "@/components/chat";
+         <div className="md:col-span-2">
           <Chat />
-        </div>
+        </div> */}
       </main>
     </div>
   );

@@ -6,7 +6,7 @@
   "scripts": {
     "services:up": "docker-compose up -d",
     "services:down": "docker-compose down",
-    "dev": "turbo dev",
+    "dev": "set -o allexport; source .env; set +o allexport && turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test"

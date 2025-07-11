@@ -34,7 +34,7 @@ def get_dependencies():
     }
 
 
-def callback(connection, ch, method, properties, body, deps):
+def callback(ch, method, properties, body, deps):
     """Callback function to process messages from the journal-analysis-queue."""
     message = {}
     entry_id = "N/A"
@@ -71,9 +71,10 @@ def callback(connection, ch, method, properties, body, deps):
             f"Database updated for entry_id: {entry_id} in {update_time:.2f}s."
         )
 
-        connection.add_callback_threadsafe(
-            lambda: ch.basic_ack(delivery_tag=method.delivery_tag)
-        )
+        # Acknowledging the message directly from the worker thread.
+        # This is generally safe with BlockingConnection as long as we're not
+        # performing many concurrent channel operations from different threads.
+        ch.basic_ack(delivery_tag=method.delivery_tag)
 
         total_time = time.time() - start_time
         logging.info(
@@ -82,24 +83,18 @@ def callback(connection, ch, method, properties, body, deps):
 
     except json.JSONDecodeError as e:
         logging.error(f"Failed to decode JSON body: {body}. Error: {e}", exc_info=True)
-        connection.add_callback_threadsafe(
-            lambda: ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-        )
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
     except (ValueError, KeyError) as e:
         logging.error(
             f"Message missing required fields: {body}. Error: {e}", exc_info=True
         )
-        connection.add_callback_threadsafe(
-            lambda: ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-        )
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
     except Exception as e:
         logging.error(
             f"Failed to process message for entry_id: {entry_id}. Error: {e}",
             exc_info=True,
         )
-        connection.add_callback_threadsafe(
-            lambda: ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-        )
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 
 def main():
