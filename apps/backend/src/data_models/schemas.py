@@ -115,3 +115,9 @@ class ChatHistory(ChatHistoryBase):
 
 class SuggestionsResponse(BaseModel):
     suggestions: List[str]
+
+
+class JournalAnalysis(BaseModel):
+    sentiment: str
+    keywords: List[str]
+    summary: str

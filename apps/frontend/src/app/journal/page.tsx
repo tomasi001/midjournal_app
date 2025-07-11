@@ -19,6 +19,7 @@ import {
   JournalEntriesList,
   JournalEntry,
 } from "@/components/journal-entries-list";
+import { Chat } from "@/components/chat";
 
 function JournalPage() {
   const { token, logout } = useAuth();
@@ -352,12 +353,9 @@ function JournalPage() {
           <h2 className="text-2xl font-bold mb-4">Past Entries</h2>
           <JournalEntriesList entries={entries} isLoading={isEntriesLoading} />
         </div>
-        {/*
-        // NOTE: CHAT REMOVED
-         // import { Chat } from "@/components/chat";
-         <div className="md:col-span-2">
+        <div className="md:col-span-2">
           <Chat />
-        </div> */}
+        </div>
       </main>
     </div>
   );

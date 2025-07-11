@@ -72,13 +72,13 @@
 
 ## 3.5 Scalability & Cost Optimization (Phase 3)
 
-- [ ] **Task 3.5.1: Refine Message Queue Usage & Error Handling**
-  - [ ] Ensure idempotent processing in consumers.
-  - [ ] Implement Dead-Letter Queues (DLQs) for critical queues.
-  - [ ] Implement robust retry mechanisms with exponential backoff.
-- [ ] **Task 3.5.2: Explore Initial LLM Cost Optimizations**
-  - [ ] Test and implement quantized models for self-hosted LLMs.
-  - [ ] Implement request batching for non-real-time LLM calls.
+- [x] **Task 3.5.1: Refine Message Queue Usage & Error Handling**
+  - [x] Ensure idempotent processing in consumers.
+  - [x] Implement Dead-Letter Queues (DLQs) for critical queues.
+  - [x] Implement robust retry mechanisms with exponential backoff.
+- [x] **Task 3.5.2: Explore Initial LLM Cost Optimizations**
+  - [x] Test and implement quantized models for self-hosted LLMs.
+  - [x] Implement request batching for non-real-time LLM calls.
 - [ ] **Task 3.5.3: Set up Detailed Metrics (Observability)**
   - [ ] Instrument backend services with custom metrics (latency, error rate, throughput).
   - [ ] Integrate metrics collection agent (e.g., Prometheus).

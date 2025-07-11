@@ -77,7 +77,7 @@ export function Chat() {
   const fetchSuggestions = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch("/api/suggestions", {
+      const response = await fetch("http://localhost:8000/suggestions", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

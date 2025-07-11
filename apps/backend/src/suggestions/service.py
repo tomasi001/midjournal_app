@@ -2,6 +2,7 @@ from typing import List, Optional
 import uuid
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.interfaces.suggestion_service import QuerySuggestionService
 from src.interfaces.llm_inference_service import LLMInferenceService
@@ -38,6 +39,10 @@ Based on the following conversation history:
 """
         return prompt_template.format(history_section=history_section)
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=60),
+    )
     async def get_suggestions(
         self, user_id: str, context: Optional[str] = None
     ) -> List[str]:

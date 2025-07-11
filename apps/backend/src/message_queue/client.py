@@ -14,7 +14,21 @@ class RabbitMQClient(MessageQueueClient):
         try:
             connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
             channel = connection.channel()
-            channel.queue_declare(queue=queue_name, durable=True)
+
+            # Dead-letter queue setup
+            dlx_name = f"{queue_name}-dlx"
+            dlq_name = f"{queue_name}-dlq"
+            channel.exchange_declare(exchange=dlx_name, exchange_type="fanout")
+            channel.queue_declare(queue=dlq_name, durable=True)
+            channel.queue_bind(exchange=dlx_name, queue=dlq_name)
+
+            # Declare the main queue with the dead-letter exchange configured
+            channel.queue_declare(
+                queue=queue_name,
+                durable=True,
+                arguments={"x-dead-letter-exchange": dlx_name},
+            )
+
             channel.basic_publish(
                 exchange="",
                 routing_key=queue_name,
@@ -46,10 +60,33 @@ class RabbitMQClient(MessageQueueClient):
 
     def subscribe(self, queue_name: str, callback, get_dependencies_func=None):
         connection = None
+        deps = (
+            {}
+        )  # Initialize deps to ensure it's always available in the finally block
         try:
             connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
             channel = connection.channel()
-            channel.queue_declare(queue=queue_name, durable=True)
+
+            # Dead-letter queue setup
+            dlx_name = f"{queue_name}-dlx"
+            dlq_name = f"{queue_name}-dlq"
+
+            # Declare the dead-letter exchange
+            channel.exchange_declare(exchange=dlx_name, exchange_type="fanout")
+
+            # Declare the dead-letter queue
+            channel.queue_declare(queue=dlq_name, durable=True)
+
+            # Bind the dead-letter queue to the dead-letter exchange
+            channel.queue_bind(exchange=dlx_name, queue=dlq_name)
+
+            # Declare the main queue with the dead-letter exchange configured
+            channel.queue_declare(
+                queue=queue_name,
+                durable=True,
+                arguments={"x-dead-letter-exchange": dlx_name},
+            )
+
             print(
                 f" [*] Waiting for messages in queue '{queue_name}'. To exit press CTRL+C"
             )

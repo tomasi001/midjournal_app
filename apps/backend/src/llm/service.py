@@ -9,6 +9,7 @@ from src.llm.prompts import SYSTEM_PROMPT
 class OllamaInferenceService(LLMInferenceService):
     def __init__(self):
         self.ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        self.model = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
 
     async def generate_response_stream(
         self, query: str, context: List[str], user_id: str, model_config: Dict[str, Any]
@@ -23,9 +24,7 @@ class OllamaInferenceService(LLMInferenceService):
         try:
             client = ollama.AsyncClient(host=self.ollama_host)
             stream = await client.chat(
-                model="llama3.2:latest",
-                # model="llama3",
-                # model="gemma3n:e4b",
+                model=self.model,
                 messages=[{"role": "user", "content": prompt}],
                 stream=True,
             )
@@ -47,9 +46,7 @@ class OllamaInferenceService(LLMInferenceService):
         try:
             client = ollama.AsyncClient(host=self.ollama_host)
             response = await client.chat(
-                model="llama3.2:latest",
-                # model="llama3",
-                # model="gemma3n:e4b",
+                model=self.model,
                 messages=[{"role": "user", "content": prompt}],
                 stream=False,
             )
@@ -71,9 +68,7 @@ class OllamaInferenceService(LLMInferenceService):
         try:
             client = ollama.AsyncClient(host=self.ollama_host)
             response = await client.chat(
-                model="llama3.2:latest",
-                # model="llama3",
-                # model="gemma3n:e4b",
+                model=self.model,
                 messages=[{"role": "user", "content": prompt}],
                 stream=False,
                 format=json_schema,
