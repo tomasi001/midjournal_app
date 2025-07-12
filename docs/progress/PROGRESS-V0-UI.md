@@ -8,7 +8,7 @@ This document tracks the progress of building the v0 UI, following the `ui-build
 - [x] **Commit 2: Reusable UI Elements (Buttons, Headers)**
 - [x] **Commit 3: Home Page - Basic Layout**
 - [x] **Commit 4: Home Page - Section Placeholders**
-- [ ] **Commit 5: New Journal Entry Page - Header and Prompt**
+- [x] **Commit 5: New Journal Entry Page - Header and Prompt**
 - [ ] **Commit 6: New Journal Entry Page - Medium Selection Buttons**
 - [ ] **Commit 7: New Journal Entry Page - Submit Button**
 - [ ] **Commit 8: Journal Entry Result Page - Header and Core Image Layout**
