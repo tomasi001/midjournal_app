@@ -1,10 +1,23 @@
 import React from "react";
+import Header from "@/components/v0/Header";
+import FeedbackButton from "@/components/v0/FeedbackButton";
 
 const JournalInsightsPage = ({ params }: { params: { id: string } }) => {
   return (
-    <div>
-      <h1>Journal Insights Page for Entry: {params.id}</h1>
-      {/* Content for this page will be added in subsequent commits */}
+    <div className="bg-white text-black min-h-screen">
+      <Header
+        leftContent={<h1 className="text-2xl font-bold">Insights</h1>}
+        rightContent={<FeedbackButton />}
+      />
+      <main className="p-6 flex flex-col items-center">
+        <div
+          className="mt-8 w-40 h-40 rounded-full bg-cover bg-center shadow-lg"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop')",
+          }}
+        ></div>
+      </main>
     </div>
   );
 };

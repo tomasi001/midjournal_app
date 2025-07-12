@@ -14,8 +14,8 @@ This document tracks the progress of building the v0 UI, following the `ui-build
 - [x] **Commit 8: Journal Entry Result Page - Header and Core Image Layout**
 - [x] **Commit 9: Journal Entry Result Page - Text Details and Action Buttons**
 - [x] **Commit 10: Journal Entry Result Page - Integrate Dynamic Image**
-- [ ] **Commit 11: Journal Entry Insights Page - Header and Thumbnail**
-- [ ] **Commit 12: Journal Entry Insights Page - Insights List**
+- [x] **Commit 11: Journal Entry Insights Page - Header and Thumbnail**
+- [x] **Commit 12: Journal Entry Insights Page - Insights List**
 - [ ] **Commit 13: Journal Entry Insights Page - Finish Button**
 - [ ] **Commit 14: Journal Library Page - Header and Search Bar**
 - [ ] **Commit 15: Journal Library Page - Entry Grid Layout**
