@@ -1,15 +1,16 @@
 import React from "react";
 import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
+import LargeActionButton from "@/components/v0/LargeActionButton";
 
 const JournalInsightsPage = ({ params }: { params: { id: string } }) => {
   return (
-    <div className="bg-white text-black min-h-screen">
+    <div className="bg-white text-black min-h-screen flex flex-col">
       <Header
         leftContent={<h1 className="text-2xl font-bold">Insights</h1>}
         rightContent={<FeedbackButton />}
       />
-      <main className="p-6 flex flex-col items-center">
+      <main className="p-6 flex flex-col items-center flex-grow">
         <div
           className="mt-8 w-40 h-40 rounded-full bg-cover bg-center shadow-lg"
           style={{
@@ -34,6 +35,9 @@ const JournalInsightsPage = ({ params }: { params: { id: string } }) => {
           </ul>
         </div>
       </main>
+      <footer className="p-6">
+        <LargeActionButton>FINISH</LargeActionButton>
+      </footer>
     </div>
   );
 };
