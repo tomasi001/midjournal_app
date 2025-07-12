@@ -25,8 +25,14 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
         <div className="relative mt-8 w-full max-w-sm">
           {/* Card container */}
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
-            {/* Image Placeholder */}
-            <div className="bg-gray-200 h-96 w-full"></div>
+            {/* Image */}
+            <div
+              className="h-96 w-full bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop')",
+              }}
+            ></div>
 
             {/* Text content */}
             <div className="pt-16 pb-6 px-6 text-center">
