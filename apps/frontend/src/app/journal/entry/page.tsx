@@ -3,6 +3,7 @@ import Link from "next/link";
 import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
 import MediumSelectionButton from "@/components/v0/MediumSelectionButton";
+import LargeActionButton from "@/components/v0/LargeActionButton";
 import {
   ChevronLeftIcon,
   ComputerDesktopIcon,
@@ -12,7 +13,7 @@ import {
 
 const JournalEntryPage = () => {
   return (
-    <div className="bg-white text-black min-h-screen">
+    <div className="bg-white text-black min-h-screen flex flex-col">
       <Header
         leftContent={
           <Link href="/" className="flex items-center">
@@ -22,7 +23,7 @@ const JournalEntryPage = () => {
         }
         rightContent={<FeedbackButton />}
       />
-      <main className="p-6 flex flex-col items-center">
+      <main className="p-6 flex flex-col items-center flex-grow">
         <p className="text-gray-500 mt-16">Choose your medium to begin:</p>
         <div className="flex mt-4">
           <MediumSelectionButton
@@ -36,6 +37,9 @@ const JournalEntryPage = () => {
           />
         </div>
       </main>
+      <footer className="p-6">
+        <LargeActionButton>SUBMIT</LargeActionButton>
+      </footer>
     </div>
   );
 };
