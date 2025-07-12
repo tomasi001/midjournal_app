@@ -4,6 +4,7 @@ import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
 import LargeActionButton from "@/components/v0/LargeActionButton";
 import {
+  ChevronLeftIcon,
   ArrowsPointingOutIcon,
   ArrowUpOnSquareIcon,
 } from "@heroicons/react/24/outline";
@@ -17,7 +18,10 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
     <div className="bg-white text-black min-h-screen flex flex-col">
       <Header
         leftContent={
-          <h1 className="text-2xl font-bold">Entry {entryNumber}</h1>
+          <Link href="/library" className="flex items-center gap-2">
+            <ChevronLeftIcon className="h-8 w-8 text-black" />
+            <h1 className="text-2xl font-bold">Entry {entryNumber}</h1>
+          </Link>
         }
         rightContent={<FeedbackButton />}
       />
@@ -61,7 +65,9 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
         </div>
       </main>
       <footer className="p-6">
-        <LargeActionButton>CONTINUE</LargeActionButton>
+        <Link href={`/journal/${entryId}/insights`}>
+          <LargeActionButton>CONTINUE</LargeActionButton>
+        </Link>
       </footer>
     </div>
   );
