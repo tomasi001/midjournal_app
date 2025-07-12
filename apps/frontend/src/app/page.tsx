@@ -1,7 +1,8 @@
 import React from "react";
+import Link from "next/link";
 import Header from "@/components/v0/Header";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 const HomePage = () => {
   return (
@@ -18,9 +19,27 @@ const HomePage = () => {
           <p className="text-gray-500 mt-2">Ready to make your next entry?</p>
         </div>
 
-        <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full w-40 h-40 flex items-center justify-center mx-auto mt-12 shadow-md">
-          <PlusIcon className="h-24 w-24 text-gray-500" />
-        </button>
+        <Link href="/journal/entry" className="mt-12">
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full w-40 h-40 flex items-center justify-center mx-auto shadow-md">
+            <PlusIcon className="h-24 w-24 text-gray-500" />
+          </button>
+        </Link>
+
+        <div className="w-full mt-12">
+          <div className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Patterns</h3>
+            <ChevronRightIcon className="h-6 w-6 text-gray-400" />
+          </div>
+          <div className="bg-gray-100 h-48 rounded-lg mt-2"></div>
+        </div>
+
+        <div className="w-full mt-8">
+          <Link href="/library" className="flex justify-between items-center">
+            <h3 className="text-xl font-semibold">Library</h3>
+            <ChevronRightIcon className="h-6 w-6 text-gray-400" />
+          </Link>
+          <div className="bg-gray-100 h-48 rounded-lg mt-2"></div>
+        </div>
       </main>
     </div>
   );
