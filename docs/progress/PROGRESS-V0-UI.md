@@ -18,8 +18,8 @@ This document tracks the progress of building the v0 UI, following the `ui-build
 - [x] **Commit 12: Journal Entry Insights Page - Insights List**
 - [x] **Commit 13: Journal Entry Insights Page - Finish Button**
 - [x] **Commit 14: Journal Library Page - Header and Search Bar**
-- [ ] **Commit 15: Journal Library Page - Entry Grid Layout**
-- [ ] **Commit 16: Journal Library Page - Display Sample Entry**
+- [x] **Commit 15: Journal Library Page - Entry Grid Layout**
+- [x] **Commit 16: Journal Library Page - Display Sample Entry**
 - [ ] **Commit 17: Basic Styling and Theming**
 - [ ] **Commit 18: Responsive Layout Adjustments**
 - [ ] **Commit 19: Accessibility Improvements**
