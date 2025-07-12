@@ -7,7 +7,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ leftContent, rightContent }) => {
   return (
-    <header className="flex items-center justify-between p-4 bg-black text-white">
+    <header className="flex items-center justify-between p-4 bg-white text-black">
       <div>{leftContent}</div>
       <div>{rightContent}</div>
     </header>
