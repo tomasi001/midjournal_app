@@ -46,6 +46,7 @@ class JournalService:
         # Queue for qualitative analysis
         message = {
             "journal_entry_id": str(db_entry.id),
+            "user_id": str(user_id),
             "content": db_entry.content,
         }
         self.mq_client.publish(queue_name=self.analysis_queue_name, message=message)

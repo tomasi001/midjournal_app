@@ -18,6 +18,7 @@ export interface JournalEntry {
   sentiment: string | null;
   keywords: string[] | null;
   summary: string | null;
+  image_url: string | null;
 }
 
 interface JournalEntriesListProps {
@@ -43,94 +44,107 @@ export function JournalEntriesList({
     return <p>No journal entries yet. Submit one to get started!</p>;
   }
 
-  const items = entries.map((entry) => (
-    <div
-      key={entry.id}
-      className={`group perspective-1000 ${
-        flippedCards[entry.id] ? "flip" : ""
-      }`}
-    >
+  const items = entries.map((entry) => {
+    console.log(entry.image_url);
+    return (
       <div
-        className="flip-card-inner relative w-full h-full transform-style-preserve-3d transition-transform duration-700"
-        style={{
-          aspectRatio: "0.718",
-          maxHeight: "540px",
-          height: "80svh",
-        }}
+        key={entry.id}
+        className={`group perspective-1000 ${
+          flippedCards[entry.id] ? "flip" : ""
+        }`}
       >
-        <div className="flip-card-front absolute w-full h-full backface-hidden">
-          <JournalCard enableTilt={!flippedCards[entry.id]}>
-            <div className="jc-content">
-              <div className="h-full flex flex-col p-6 text-white text-left">
-                <CardHeader className="flex-shrink-0 !p-0">
-                  <CardTitle className="text-white">
-                    {entry.title || "Journal Entry"}
-                  </CardTitle>
-                  <CardDescription className="text-gray-300">
-                    {new Date(entry.created_at).toLocaleString()}
-                  </CardDescription>
-                </CardHeader>
+        <div
+          className="flip-card-inner relative w-full h-full transform-style-preserve-3d transition-transform duration-700"
+          style={{
+            aspectRatio: "0.718",
+            maxHeight: "540px",
+            height: "80svh",
+          }}
+        >
+          <div className="flip-card-front absolute w-full h-full backface-hidden">
+            <JournalCard enableTilt={!flippedCards[entry.id]}>
+              <div className="jc-content">
+                <div className="h-full flex flex-col p-6 text-white text-left">
+                  <CardHeader className="flex-shrink-0 !p-0">
+                    <CardTitle className="text-white">
+                      {entry.title || "Journal Entry"}
+                    </CardTitle>
+                    <CardDescription className="text-gray-300">
+                      {new Date(entry.created_at).toLocaleString()}
+                    </CardDescription>
+                  </CardHeader>
 
-                <div className="flex-grow mt-4 overflow-y-auto pr-2">
-                  <p className="whitespace-pre-wrap">{entry.content}</p>
-                </div>
-
-                <div className="flex-shrink-0 text-sm text-gray-400 text-center py-2">
-                  Click to see insights
-                </div>
-              </div>
-            </div>
-          </JournalCard>
-        </div>
-        <div className="flip-card-back absolute w-full h-full backface-hidden">
-          <JournalCard enableTilt={flippedCards[entry.id]}>
-            <div className="jc-content">
-              <div className="h-full flex flex-col p-6 text-white text-left">
-                <CardHeader className="flex-shrink-0 !p-0">
-                  <CardTitle className="text-white">Analysis</CardTitle>
-                  <CardDescription className="text-gray-300">
-                    {new Date(entry.updated_at).toLocaleString()}
-                  </CardDescription>
-                </CardHeader>
-
-                <div className="flex-grow mt-4 overflow-y-auto pr-2">
-                  {entry.summary && (
-                    <p className="font-semibold italic mb-4">
-                      &quot;{entry.summary}&quot;
-                    </p>
+                  {entry.image_url && (
+                    <div className="mt-4">
+                      <img
+                        src={entry.image_url}
+                        alt={entry.title || "Generated image"}
+                        className="w-full h-auto rounded-lg"
+                      />
+                    </div>
                   )}
-                  <div className="flex flex-wrap gap-2 items-center">
-                    {entry.sentiment && (
-                      <Badge
-                        variant={
-                          entry.sentiment === "Positive"
-                            ? "default"
-                            : entry.sentiment === "Negative"
-                            ? "destructive"
-                            : "secondary"
-                        }
-                      >
-                        {entry.sentiment}
-                      </Badge>
-                    )}
-                    {entry.keywords?.map((keyword) => (
-                      <Badge key={keyword} variant="outline">
-                        {keyword}
-                      </Badge>
-                    ))}
+
+                  <div className="flex-grow mt-4 overflow-y-auto pr-2">
+                    <p className="whitespace-pre-wrap">{entry.content}</p>
+                  </div>
+
+                  <div className="flex-shrink-0 text-sm text-gray-400 text-center py-2">
+                    Click to see insights
                   </div>
                 </div>
+              </div>
+            </JournalCard>
+          </div>
+          <div className="flip-card-back absolute w-full h-full backface-hidden">
+            <JournalCard enableTilt={flippedCards[entry.id]}>
+              <div className="jc-content">
+                <div className="h-full flex flex-col p-6 text-white text-left">
+                  <CardHeader className="flex-shrink-0 !p-0">
+                    <CardTitle className="text-white">Analysis</CardTitle>
+                    <CardDescription className="text-gray-300">
+                      {new Date(entry.updated_at).toLocaleString()}
+                    </CardDescription>
+                  </CardHeader>
 
-                <div className="flex-shrink-0 text-sm text-gray-400 text-center py-2">
-                  Click to see journal
+                  <div className="flex-grow mt-4 overflow-y-auto pr-2">
+                    {entry.summary && (
+                      <p className="font-semibold italic mb-4">
+                        &quot;{entry.summary}&quot;
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {entry.sentiment && (
+                        <Badge
+                          variant={
+                            entry.sentiment === "Positive"
+                              ? "default"
+                              : entry.sentiment === "Negative"
+                              ? "destructive"
+                              : "secondary"
+                          }
+                        >
+                          {entry.sentiment}
+                        </Badge>
+                      )}
+                      {entry.keywords?.map((keyword) => (
+                        <Badge key={keyword} variant="outline">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex-shrink-0 text-sm text-gray-400 text-center py-2">
+                    Click to see journal
+                  </div>
                 </div>
               </div>
-            </div>
-          </JournalCard>
+            </JournalCard>
+          </div>
         </div>
       </div>
-    </div>
-  ));
+    );
+  });
 
   return (
     <AnimatedList

@@ -71,7 +71,7 @@ class JournalEntry(JournalEntryBase):
     sentiment: Optional[str] = None
     keywords: Optional[List[str]] = None
     summary: Optional[str] = None
-    generated_image_url: Optional[str] = None
+    image_url: Optional[str] = None
 
     class Config:
         from_attributes = True

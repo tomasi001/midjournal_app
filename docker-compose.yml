@@ -7,6 +7,7 @@ services:
       - "8000:8000"
     volumes:
       - ./apps/backend/src:/app/src
+      - huggingface_cache:/root/.cache/huggingface
     environment:
       - DATABASE_URL=postgresql://youruser:yourpassword@db/yourdb
       - QDRANT_URL=http://qdrant:6333
@@ -19,8 +20,8 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_started
-      ollama:
-        condition: service_started
+      # ollama:
+      #   condition: service_started
 
   ingestion-worker:
     build:
@@ -28,6 +29,7 @@ services:
       dockerfile: src/api/Dockerfile
     volumes:
       - ./apps/backend/src:/app/src
+      - huggingface_cache:/root/.cache/huggingface
     environment:
       - DATABASE_URL=postgresql://youruser:yourpassword@db/yourdb
       - QDRANT_URL=http://qdrant:6333
@@ -47,6 +49,7 @@ services:
       dockerfile: src/api/Dockerfile
     volumes:
       - ./apps/backend/src:/app/src
+      - huggingface_cache:/root/.cache/huggingface
     environment:
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
       - DATABASE_URL=postgresql://youruser:yourpassword@db/yourdb
@@ -58,6 +61,48 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+
+  image-gen-worker:
+    build:
+      context: ./apps/backend
+      dockerfile: src/api/Dockerfile
+    volumes:
+      - ./apps/backend/src:/app/src
+      - huggingface_cache:/root/.cache/huggingface
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
+      - DATABASE_URL=postgresql://youruser:yourpassword@db/yourdb
+      - OLLAMA_HOST=${OLLAMA_HOST_OVERRIDE:-http://ollama:11434}
+      - MINIO_URL=http://minio:9000
+      - MINIO_PUBLIC_URL=http://localhost:9000
+      - MINIO_ACCESS_KEY=youruser
+      - MINIO_SECRET_KEY=yourpassword
+      - MINIO_BUCKET=images
+    command: ["python", "-u", "src/image_gen/consumer.py"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=youruser
+      - MINIO_ROOT_PASSWORD=yourpassword
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
 
   db:
     image: postgres:15-alpine
@@ -101,42 +146,44 @@ services:
       timeout: 5s
       retries: 5
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./apps/backend/prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-    depends_on:
-      - backend
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./apps/backend/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   command:
+  #     - "--config.file=/etc/prometheus/prometheus.yml"
+  #   depends_on:
+  #     - backend
 
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "9080:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./apps/backend/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-    depends_on:
-      - prometheus
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   ports:
+  #     - "9080:3000"
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #     - ./apps/backend/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+  #   depends_on:
+  #     - prometheus
 
 volumes:
   db_data:
   qdrant_data:
   rabbitmq_data:
-  ollama_data:
-  grafana_data:
+  huggingface_cache:
+  minio_data:
+  # ollama_data:
+  # grafana_data:

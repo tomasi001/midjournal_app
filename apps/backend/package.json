@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "install": "poetry install --no-root",
-    "dev": "cd ../.. && if [ -n \"$OLLAMA_HOST_OVERRIDE\" ]; then docker-compose up --build --remove-orphans --scale ollama=0; else docker-compose up --build --remove-orphans; fi",
+    "dev": "docker-compose up --build --remove-orphans",
     "prelint": "poetry install --no-root",
     "lint": "poetry run python -m ruff check src/ tests/",
     "prelint:fix": "poetry install --no-root",

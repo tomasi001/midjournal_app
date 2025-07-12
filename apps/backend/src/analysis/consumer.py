@@ -6,6 +6,7 @@ import time
 import asyncio
 from sqlalchemy.orm import Session
 from uuid import UUID
+import structlog
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -14,6 +15,9 @@ from src.message_queue.client import RabbitMQClient
 from src.db.database import SessionLocal
 from src.analysis.service import JournalAnalysisService
 from src.llm.service import OllamaInferenceService
+from src.image_gen.prompt_generator import PromptGenerator
+
+log = structlog.get_logger()
 
 # Configure logging
 logging.basicConfig(
@@ -27,10 +31,15 @@ def get_dependencies():
     """Initializes and returns dependencies for the consumer."""
     llm_service = OllamaInferenceService()
     analysis_service = JournalAnalysisService(llm_service)
+    prompt_generator = PromptGenerator(llm_service)
     db_session = SessionLocal()
+    # A separate client for publishing
+    mq_client = RabbitMQClient()
     return {
         "analysis_service": analysis_service,
+        "prompt_generator": prompt_generator,
         "db_session": db_session,
+        "mq_client": mq_client,
     }
 
 
@@ -44,59 +53,60 @@ def callback(ch, method, properties, body, deps):
         if not entry_id_str:
             raise ValueError("journal_entry_id missing from message")
         entry_id = UUID(entry_id_str)
+        user_id = message.get("user_id")
         content = message.get("content")
 
-        logging.info(f"Received analysis request for entry_id: {entry_id}")
-        start_time = time.time()
+        log.info("Received analysis request", entry_id=str(entry_id))
 
         analysis_service: JournalAnalysisService = deps["analysis_service"]
+        prompt_generator: PromptGenerator = deps["prompt_generator"]
         db: Session = deps["db_session"]
+        mq_client: RabbitMQClient = deps["mq_client"]
 
         # Run the async analysis function
         sentiment, keywords, summary = asyncio.run(
             analysis_service.analyze_entry(content)
         )
-
-        analysis_time = time.time() - start_time
-        logging.info(
-            f"Analysis completed for entry_id: {entry_id} in {analysis_time:.2f}s."
-        )
+        log.info("Analysis completed", entry_id=str(entry_id))
 
         # Update the database
         analysis_service.update_journal_entry_with_analysis(
             db, entry_id, sentiment, keywords, summary
         )
-        update_time = time.time() - start_time - analysis_time
-        logging.info(
-            f"Database updated for entry_id: {entry_id} in {update_time:.2f}s."
+        log.info("Database updated with analysis", entry_id=str(entry_id))
+
+        # Generate the image prompt
+        image_prompt = asyncio.run(
+            prompt_generator.generate_prompt(sentiment, keywords, content)
         )
 
-        total_time = time.time() - start_time
-        logging.info(
-            f"Successfully processed entry_id: {entry_id}. Total time: {total_time:.2f}s."
+        # Publish to the image generation queue
+        mq_client.publish(
+            "image-gen-queue",
+            {
+                "prompt": image_prompt,
+                "user_id": user_id,
+                "journal_entry_id": entry_id_str,
+            },
         )
+        log.info("Published request to image-gen-queue", entry_id=str(entry_id))
 
     except json.JSONDecodeError as e:
-        logging.error(f"Failed to decode JSON body: {body}. Error: {e}", exc_info=True)
-        raise e
+        log.error("Failed to decode JSON body", body=body, error=e)
+        raise
     except (ValueError, KeyError) as e:
-        logging.error(
-            f"Message missing required fields: {body}. Error: {e}", exc_info=True
-        )
-        raise e
+        log.error("Message missing required fields", body=body, error=e)
+        raise
     except Exception as e:
-        logging.error(
-            f"Failed to process message for entry_id: {entry_id}. Error: {e}",
-            exc_info=True,
-        )
-        raise e
+        log.error("Failed to process message", entry_id=entry_id, error=e)
+        raise
 
 
 def main():
     """
     Main function to start the journal analysis consumer.
     """
-    print("2025-07-09 10:42:15 - INFO - Starting journal analysis consumer...")
+    log.info("Starting journal analysis consumer...")
     mq_client = RabbitMQClient()
 
     try:
@@ -104,11 +114,9 @@ def main():
         # Pass the dependency-injection function to the subscribe method
         mq_client.subscribe(queue_name, callback, get_dependencies)
     except KeyboardInterrupt:
-        print("Consumer stopped by user.")
+        log.info("Consumer stopped by user.")
     finally:
-        # The close method on the client is less critical now, but good practice.
-        mq_client.close()
-        print("Consumer shut down gracefully.")
+        log.info("Consumer shut down gracefully.")
 
 
 if __name__ == "__main__":

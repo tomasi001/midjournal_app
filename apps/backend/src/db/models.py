@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, VARCHAR, JSON
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, VARCHAR, JSON, ARRAY
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -45,10 +45,10 @@ class JournalEntry(Base):
     updated_at = Column(
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
-    sentiment = Column(String)
-    keywords = Column(JSON)
-    summary = Column(Text)
-    generated_image_url = Column(Text)
+    sentiment = Column(String, nullable=True)
+    keywords = Column(ARRAY(String), nullable=True)
+    summary = Column(Text, nullable=True)
+    image_url = Column(String, nullable=True)
 
     owner = relationship("User", back_populates="journal_entries")
 
