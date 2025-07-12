@@ -92,8 +92,9 @@ def main():
 
     print(f"Starting to consume from '{queue_name}'...")
 
-    # Use a lambda to pass the pre-loaded services to the dependency factory
-    get_deps_func = lambda: get_dependencies(image_gen_service, storage_service)
+    # Use a nested function (closure) to pass the pre-loaded services
+    def get_deps_func():
+        return get_dependencies(image_gen_service, storage_service)
 
     rabbitmq_client.subscribe(
         queue_name=queue_name,
