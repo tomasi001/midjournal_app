@@ -1,7 +1,17 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, VARCHAR, ARRAY
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Text,
+    DateTime,
+    ForeignKey,
+    JSON,
+    ARRAY,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -29,7 +39,7 @@ class Document(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     source_name = Column(String, nullable=False)
     uploaded_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    status = Column(VARCHAR(20), nullable=False)
+    status = Column(String, nullable=False)
 
     owner = relationship("User", back_populates="documents")
 
@@ -39,9 +49,10 @@ class JournalEntry(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    title = Column(Text)
+    entry_number = Column(Integer, nullable=False)
+    title = Column(String, nullable=True)
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
@@ -51,6 +62,10 @@ class JournalEntry(Base):
     image_url = Column(String, nullable=True)
 
     owner = relationship("User", back_populates="journal_entries")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "entry_number", name="uq_user_entry_number"),
+    )
 
 
 class ChatHistory(Base):

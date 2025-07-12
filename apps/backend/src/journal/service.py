@@ -1,5 +1,6 @@
 from uuid import UUID
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from src.data_models.schemas import JournalEntryCreate
 from src.db.models import JournalEntry as JournalEntryModel
@@ -25,8 +26,18 @@ class JournalService:
     def create_journal_entry(
         self, user_id: UUID, entry_data: JournalEntryCreate
     ) -> JournalEntryModel:
-        # Create and save the journal entry
-        db_entry = JournalEntryModel(**entry_data.model_dump(), user_id=user_id)
+        # Step 1: Calculate the next entry number for the user
+        max_entry_number = (
+            self.db_session.query(func.max(JournalEntryModel.entry_number))
+            .filter(JournalEntryModel.user_id == user_id)
+            .scalar()
+        )
+        next_entry_number = (max_entry_number or 0) + 1
+
+        # Step 2: Create and save the journal entry
+        db_entry = JournalEntryModel(
+            **entry_data.model_dump(), user_id=user_id, entry_number=next_entry_number
+        )
         self.db_session.add(db_entry)
         self.db_session.commit()
         self.db_session.refresh(db_entry)
@@ -62,4 +73,15 @@ class JournalService:
             .filter(JournalEntryModel.user_id == user_id)
             .order_by(JournalEntryModel.created_at.desc())
             .all()
+        )
+
+    def get_journal_entry(
+        self, user_id: UUID, entry_id: UUID
+    ) -> JournalEntryModel | None:
+        return (
+            self.db_session.query(JournalEntryModel)
+            .filter(
+                JournalEntryModel.user_id == user_id, JournalEntryModel.id == entry_id
+            )
+            .first()
         )

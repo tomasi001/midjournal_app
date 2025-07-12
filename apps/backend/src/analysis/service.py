@@ -10,12 +10,14 @@ from src.data_models.schemas import JournalAnalysis
 
 COMBINED_ANALYSIS_PROMPT = """
 Analyze the following journal entry and provide:
-1.  A sentiment analysis (e.g., 'Positive', 'Neutral', 'Negative').
-2.  A list of up to 5 main keywords or themes.
-3.  A concise, one to two-sentence summary.
+1.  A short, descriptive title (2-4 words).
+2.  A sentiment analysis (e.g., 'Positive', 'Neutral', 'Negative').
+3.  A list of up to 5 main keywords or themes.
+4.  A concise, one to two-sentence summary.
 
 Return the response as a JSON object that conforms to the following schema:
 {{
+    "title": "string",
     "sentiment": "string",
     "keywords": ["string", "string", ...],
     "summary": "string"
@@ -36,7 +38,9 @@ class JournalAnalysisService:
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=60),
     )
-    async def analyze_entry(self, entry_content: str) -> Tuple[str, List[str], str]:
+    async def analyze_entry(
+        self, entry_content: str
+    ) -> Tuple[str, str, List[str], str]:
         prompt = COMBINED_ANALYSIS_PROMPT.format(content=entry_content)
 
         response_json = await self.llm_service.generate_structured_response(
@@ -47,18 +51,20 @@ class JournalAnalysisService:
 
         analysis = JournalAnalysis.model_validate_json(response_json)
 
-        return analysis.sentiment, analysis.keywords, analysis.summary
+        return analysis.title, analysis.sentiment, analysis.keywords, analysis.summary
 
     def update_journal_entry_with_analysis(
         self,
         db: Session,
         entry_id: UUID,
+        title: str,
         sentiment: str,
         keywords: List[str],
         summary: str,
     ):
         db.query(JournalEntry).filter(JournalEntry.id == entry_id).update(
             {
+                "title": title,
                 "sentiment": sentiment,
                 "keywords": keywords,
                 "summary": summary,

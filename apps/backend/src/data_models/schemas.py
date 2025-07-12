@@ -66,6 +66,7 @@ class JournalEntryCreate(JournalEntryBase):
 class JournalEntry(JournalEntryBase):
     id: uuid.UUID
     user_id: uuid.UUID
+    entry_number: int
     created_at: datetime
     updated_at: datetime
     sentiment: Optional[str] = None
@@ -118,6 +119,7 @@ class SuggestionsResponse(BaseModel):
 
 
 class JournalAnalysis(BaseModel):
+    title: str
     sentiment: str
     keywords: List[str]
     summary: str

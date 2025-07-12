@@ -45,7 +45,6 @@ export function JournalEntriesList({
   }
 
   const items = entries.map((entry) => {
-    console.log(entry.image_url);
     return (
       <div
         key={entry.id}

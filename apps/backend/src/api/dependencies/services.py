@@ -79,3 +79,7 @@ def get_query_service():
         embedding_service=text_processing_singleton,
         vector_store_client=vector_store_singleton,
     )
+
+
+def get_ocr_service() -> TesseractOCRService:
+    return ocr_service_singleton

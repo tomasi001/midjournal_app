@@ -41,7 +41,7 @@ export default function LoginPage() {
         const data = await response.json();
         login(data.access_token);
         toast.success("Login successful!");
-        router.push("/journal");
+        router.push("/");
       } else {
         const errorData = await response.json();
         toast.error(

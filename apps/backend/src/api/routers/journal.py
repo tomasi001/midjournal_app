@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from src.data_models.schemas import (
@@ -34,3 +35,12 @@ def get_journal_entries(
     journal_service: JournalService = Depends(get_journal_service),
 ):
     return journal_service.get_journal_entries(user_id=current_user.id)
+
+
+@router.get("/entries/{entry_id}", response_model=JournalEntry)
+def get_journal_entry(
+    entry_id: UUID,
+    current_user: User = Depends(get_current_user),
+    journal_service: JournalService = Depends(get_journal_service),
+):
+    return journal_service.get_journal_entry(user_id=current_user.id, entry_id=entry_id)

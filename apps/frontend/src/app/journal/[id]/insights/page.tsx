@@ -1,12 +1,74 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
 import LargeActionButton from "@/components/v0/LargeActionButton";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { withAuth } from "@/components/with-auth";
+import { useAuth } from "@/context/auth-context";
+import Iridescence from "@/components/ui/Iridescence";
+
+interface JournalEntry {
+  id: string;
+  entry_number: number;
+  summary: string | null;
+  emotions: string[] | null;
+  themes: string[] | null;
+  image_url: string;
+}
 
 const JournalInsightsPage = ({ params }: { params: { id: string } }) => {
+  const { token } = useAuth();
+  const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [loading, setLoading] = useState(true);
   const entryId = params.id;
+
+  useEffect(() => {
+    const fetchEntry = async () => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/journal/entries/${entryId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEntry(data);
+        } else {
+          console.error("Failed to fetch journal entry insights.");
+          setEntry(null);
+        }
+      } catch (error) {
+        console.error("An error occurred while fetching insights:", error);
+        setEntry(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntry();
+  }, [entryId, token]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading insights...
+      </div>
+    );
+  }
+
+  if (!entry) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Insights not found or still processing.
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
@@ -23,27 +85,43 @@ const JournalInsightsPage = ({ params }: { params: { id: string } }) => {
         rightContent={<FeedbackButton />}
       />
       <main className="p-6 flex flex-col items-center flex-grow">
-        <div
-          className="mt-8 w-40 h-40 rounded-full bg-cover bg-center shadow-lg flex-shrink-0"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop')",
-          }}
-        ></div>
+        <div className="mt-8 w-40 h-40 rounded-full bg-gray-100 shadow-lg flex-shrink-0 overflow-hidden">
+          {entry.image_url ? (
+            <div
+              className="w-full h-full bg-cover bg-center"
+              style={{
+                backgroundImage: `url('${entry.image_url}')`,
+              }}
+            ></div>
+          ) : (
+            <Iridescence />
+          )}
+        </div>
 
         <div className="mt-8 px-4 w-full">
-          <h2 className="text-2xl font-bold mb-4">Insights</h2>
+          <h2 className="text-2xl font-bold mb-4">Summary</h2>
+          <p className="text-lg mb-4">
+            {entry.summary || "No summary available."}
+          </p>
+
+          <h2 className="text-2xl font-bold mb-4">Emotions</h2>
+          <ul className="list-disc list-inside space-y-2 text-lg mb-4">
+            {entry.emotions?.length ? (
+              entry.emotions.map((emotion, index) => (
+                <li key={index}>{emotion}</li>
+              ))
+            ) : (
+              <li>No emotions detected.</li>
+            )}
+          </ul>
+
+          <h2 className="text-2xl font-bold mb-4">Themes</h2>
           <ul className="list-disc list-inside space-y-2 text-lg">
-            <li>2 sentence summary of entry</li>
-            <li>emotional valence</li>
-            <li>emotional arousal</li>
-            <li>top 3 most emotions detected</li>
-            <li>key themes/topics spoken about</li>
-            <li>
-              What these themes might mean and why (linked to relevant reading
-              materials)
-            </li>
-            <li>Follow up queries and chance to extend on entry</li>
+            {entry.themes?.length ? (
+              entry.themes.map((theme, index) => <li key={index}>{theme}</li>)
+            ) : (
+              <li>No themes detected.</li>
+            )}
           </ul>
         </div>
       </main>
@@ -56,4 +134,4 @@ const JournalInsightsPage = ({ params }: { params: { id: string } }) => {
   );
 };
 
-export default JournalInsightsPage;
+export default withAuth(JournalInsightsPage);

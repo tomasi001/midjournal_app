@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
@@ -8,11 +10,51 @@ import {
   PlusIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { withAuth } from "@/components/with-auth";
+import { useAuth } from "@/context/auth-context";
+
+interface JournalEntry {
+  id: string;
+  entry_number: number;
+  image_url: string;
+}
 
 const JournalLibraryPage = () => {
-  const sampleEntryId = "71";
-  const sampleImageUrl =
-    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop";
+  const { token } = useAuth();
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEntries = async () => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const response = await fetch("/api/journal/entries", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEntries(data);
+        } else {
+          console.error("Failed to fetch journal entries.");
+          setEntries([]);
+        }
+      } catch (error) {
+        console.error(
+          "An error occurred while fetching journal entries:",
+          error
+        );
+        setEntries([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntries();
+  }, [token]);
 
   return (
     <div className="bg-white text-black min-h-screen">
@@ -43,16 +85,24 @@ const JournalLibraryPage = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-4 mt-8">
-          <JournalEntryCard entryId={sampleEntryId} imageUrl={sampleImageUrl} />
-          <div className="bg-gray-200 aspect-[2/3] rounded-lg"></div>
-          <div className="bg-gray-200 aspect-[2/3] rounded-lg"></div>
-          <div className="bg-gray-200 aspect-[2/3] rounded-lg"></div>
-          <div className="bg-gray-200 aspect-[2/3] rounded-lg"></div>
-          <div className="bg-gray-200 aspect-[2/3] rounded-lg"></div>
+          {loading ? (
+            <p>Loading entries...</p>
+          ) : entries.length > 0 ? (
+            entries.map((entry) => (
+              <JournalEntryCard
+                key={entry.id}
+                entryId={entry.id}
+                imageUrl={entry.image_url}
+                entryNumber={entry.entry_number}
+              />
+            ))
+          ) : (
+            <p>No entries found.</p>
+          )}
         </div>
       </main>
     </div>
   );
 };
 
-export default JournalLibraryPage;
+export default withAuth(JournalLibraryPage);

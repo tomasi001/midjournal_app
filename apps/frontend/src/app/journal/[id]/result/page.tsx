@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
@@ -8,11 +10,71 @@ import {
   ArrowsPointingOutIcon,
   ArrowUpOnSquareIcon,
 } from "@heroicons/react/24/outline";
+import { withAuth } from "@/components/with-auth";
+import { useAuth } from "@/context/auth-context";
+import Iridescence from "@/components/ui/Iridescence";
+
+interface JournalEntry {
+  id: string;
+  entry_number: number;
+  title: string;
+  created_at: string;
+  image_url: string;
+}
 
 const JournalResultPage = ({ params }: { params: { id: string } }) => {
-  // Using a static number for now as per the design.
-  const entryNumber = 71;
+  const { token } = useAuth();
+  const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const entryId = params.id;
+
+  useEffect(() => {
+    const fetchEntry = async () => {
+      if (!token) return;
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/journal/entries/${entryId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEntry(data);
+        } else {
+          console.error("Failed to fetch journal entry.");
+          setEntry(null);
+        }
+      } catch (error) {
+        console.error("An error occurred while fetching journal entry:", error);
+        setEntry(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEntry();
+  }, [entryId, token]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!entry) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Entry not found.
+      </div>
+    );
+  }
+
+  const entryNumber = entry.entry_number;
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
@@ -30,18 +92,27 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
           {/* Card container */}
           <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
             {/* Image */}
-            <div
-              className="h-96 w-full bg-cover bg-center"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2070&auto=format&fit=crop')",
-              }}
-            ></div>
+            <div className="h-96 w-full bg-gray-100">
+              {entry.image_url ? (
+                <div
+                  className="h-full w-full bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url('${entry.image_url}')`,
+                  }}
+                ></div>
+              ) : (
+                <Iridescence />
+              )}
+            </div>
 
             {/* Text content */}
             <div className="pt-16 pb-6 px-6 text-center">
-              <h2 className="text-3xl font-bold">“Working it out”</h2>
-              <p className="text-gray-500 mt-2">26/01/25</p>
+              <h2 className="text-3xl font-bold">
+                “{entry.title || "Untitled"}”
+              </h2>
+              <p className="text-gray-500 mt-2">
+                {new Date(entry.created_at).toLocaleDateString()}
+              </p>
 
               <Link
                 href={`/journal/${entryId}/insights`}
@@ -73,4 +144,4 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
   );
 };
 
-export default JournalResultPage;
+export default withAuth(JournalResultPage);

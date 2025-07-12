@@ -6,11 +6,13 @@ import { toast } from "sonner";
 interface CameraEntryProps {
   capturedImage: string | null;
   setCapturedImage: (image: string | null) => void;
+  onExtractText: () => void;
 }
 
 const CameraEntry: React.FC<CameraEntryProps> = ({
   capturedImage,
   setCapturedImage,
+  onExtractText,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,12 +75,20 @@ const CameraEntry: React.FC<CameraEntryProps> = ({
             alt="Captured"
             className="max-w-full max-h-[70vh] rounded-lg"
           />
-          <button
-            onClick={() => setCapturedImage(null)}
-            className="mt-4 bg-gray-200 text-black px-4 py-2 rounded-lg"
-          >
-            Retake
-          </button>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => setCapturedImage(null)}
+              className="bg-gray-200 text-black px-4 py-2 rounded-lg"
+            >
+              Retake
+            </button>
+            <button
+              onClick={onExtractText}
+              className="bg-green-500 text-white px-4 py-2 rounded-lg"
+            >
+              Extract Text
+            </button>
+          </div>
         </>
       ) : (
         <>

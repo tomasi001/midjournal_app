@@ -5,7 +5,7 @@ from starlette.responses import Response
 import time
 
 from src.db.database import create_tables
-from src.api.routers import auth, ingestion, query, tts, journal, suggestions
+from src.api.routers import auth, ingestion, query, tts, journal, suggestions, ocr
 from src.api.metrics import REQUEST_COUNT, REQUEST_LATENCY
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
@@ -63,6 +63,7 @@ app.include_router(query.router)
 app.include_router(tts.router)
 app.include_router(journal.router)
 app.include_router(suggestions.router)
+app.include_router(ocr.router)
 
 
 @app.get("/")
