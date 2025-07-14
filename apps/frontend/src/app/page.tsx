@@ -14,7 +14,11 @@ const HomePage = () => {
         leftContent={
           <h1 className="text-2xl font-bold text-black">Midjournal</h1>
         }
-        rightContent={<UserCircleIcon className="h-10 w-10 text-black" />}
+        rightContent={
+          <Link href="/profile">
+            <UserCircleIcon className="h-10 w-10 text-black" />
+          </Link>
+        }
       />
       <main className="p-6 flex flex-col items-center">
         <div className="text-center mt-8">

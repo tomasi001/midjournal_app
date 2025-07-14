@@ -28,3 +28,10 @@ class AuthenticationService(ABC):
         Gets the current authenticated user from a token.
         """
         pass
+
+    @abstractmethod
+    def refresh_access_token(self, refresh_token: str) -> Token:
+        """
+        Refreshes an access token using a refresh token.
+        """
+        pass

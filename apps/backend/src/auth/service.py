@@ -39,7 +39,17 @@ class ConcreteAuthenticationService(AuthenticationService):
             expire = datetime.now(timezone.utc) + expires_delta
         else:
             expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-        to_encode.update({"exp": expire})
+        to_encode.update({"exp": expire, "token_type": "access"})
+        encoded_jwt = jwt.encode(
+            to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
+        )
+        return encoded_jwt
+
+    def _create_refresh_token(self, data: dict) -> str:
+        expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+        to_encode = data.copy()
+        expire = datetime.now(timezone.utc) + expires
+        to_encode.update({"exp": expire, "token_type": "refresh"})
         encoded_jwt = jwt.encode(
             to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
         )
@@ -72,7 +82,12 @@ class ConcreteAuthenticationService(AuthenticationService):
         access_token = self._create_access_token(
             data={"sub": user.email}, expires_delta=access_token_expires
         )
-        return Token(access_token=access_token, token_type="bearer")
+        refresh_token = self._create_refresh_token(data={"sub": user.email})
+        return Token(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",
+        )
 
     def get_current_user(self, db: Session, token: str) -> models.User:
         credentials_exception = HTTPException(
@@ -84,6 +99,8 @@ class ConcreteAuthenticationService(AuthenticationService):
             payload = jwt.decode(
                 token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
             )
+            if payload.get("token_type") != "access":
+                raise credentials_exception
             email: Optional[str] = payload.get("sub")
             if email is None:
                 raise credentials_exception
@@ -95,3 +112,32 @@ class ConcreteAuthenticationService(AuthenticationService):
         if user is None:
             raise credentials_exception
         return user
+
+    def refresh_access_token(self, refresh_token: str) -> Token:
+        credentials_exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        try:
+            payload = jwt.decode(
+                refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            )
+            if payload.get("token_type") != "refresh":
+                raise credentials_exception
+            email: Optional[str] = payload.get("sub")
+            if email is None:
+                raise credentials_exception
+            token_data = TokenData(email=email)
+        except JWTError:
+            raise credentials_exception
+
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = self._create_access_token(
+            data={"sub": token_data.email}, expires_delta=access_token_expires
+        )
+        return Token(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer",
+        )

@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from src.auth.service import ConcreteAuthenticationService
-from src.data_models.schemas import User, UserCreate, Token
+from src.data_models.schemas import User, UserCreate, Token, RefreshRequest
 from src.api.dependencies.auth import get_current_user
 from src.db.database import get_db
 
@@ -32,6 +32,14 @@ def login_for_access_token(
     Log in a user to get an access token.
     """
     return auth_service.login_user(db, form_data)
+
+
+@router.post("/refresh", response_model=Token)
+def refresh_access_token(refresh_request: RefreshRequest):
+    """
+    Refresh an access token.
+    """
+    return auth_service.refresh_access_token(refresh_request.refresh_token)
 
 
 @router.get("/me", response_model=User)

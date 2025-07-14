@@ -39,7 +39,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        login(data.access_token);
+        login(data.access_token, data.refresh_token);
         toast.success("Login successful!");
         router.push("/");
       } else {
