@@ -60,6 +60,11 @@ class JournalEntry(Base):
     keywords = Column(ARRAY(String), nullable=True)
     summary = Column(Text, nullable=True)
     image_url = Column(String, nullable=True)
+    emotional_landscape = Column(JSON, nullable=True)
+    themes_topics = Column(JSON, nullable=True)
+    cognitive_patterns = Column(JSON, nullable=True)
+    relational_dynamics = Column(JSON, nullable=True)
+    contextual_clues = Column(JSON, nullable=True)
 
     owner = relationship("User", back_populates="journal_entries")
 

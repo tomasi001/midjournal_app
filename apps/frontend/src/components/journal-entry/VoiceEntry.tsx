@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
 import { MicrophoneIcon } from "@heroicons/react/24/outline";
+import { Dispatch, FC, SetStateAction, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 interface VoiceEntryProps {
   text: string;
-  setText: (text: string) => void;
+  setText: Dispatch<SetStateAction<string>>;
   isRecording: boolean;
-  setIsRecording: (isRecording: boolean) => void;
+  setIsRecording: Dispatch<SetStateAction<boolean>>;
 }
 
-const VoiceEntry: React.FC<VoiceEntryProps> = ({
+const VoiceEntry: FC<VoiceEntryProps> = ({
   text,
   setText,
   isRecording,
@@ -20,37 +20,28 @@ const VoiceEntry: React.FC<VoiceEntryProps> = ({
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && !recognitionRef.current) {
       const SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true;
-        recognitionRef.current.interimResults = false;
-        recognitionRef.current.lang = "en-US";
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
+        recognitionRef.current = recognition;
 
-        recognitionRef.current.onresult = (event) => {
-          let transcript_to_append = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            transcript_to_append += event.results[i][0].transcript;
-          }
-
-          if (transcript_to_append) {
-            setText((prevText) => {
-              const separator = prevText.trim().length > 0 ? " " : "";
-              return prevText + separator + transcript_to_append.trim();
-            });
+        recognition.onend = () => {
+          if (isRecording) {
+            setIsRecording(false);
           }
         };
 
-        recognitionRef.current.onerror = (event) => {
+        recognition.onerror = (event) => {
           console.error("Speech recognition error", event.error);
           toast.error(`Speech recognition error: ${event.error}`);
-          setIsRecording(false);
-        };
-
-        recognitionRef.current.onend = () => {
-          setIsRecording(false);
+          if (isRecording) {
+            setIsRecording(false);
+          }
         };
       } else {
         toast.error("Speech recognition not supported in this browser.");
@@ -63,13 +54,34 @@ const VoiceEntry: React.FC<VoiceEntryProps> = ({
         setIsRecording(false);
       }
     };
-  }, [setText, setIsRecording, isRecording]);
+  }, [isRecording, setIsRecording]);
+
+  useEffect(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.onresult = (event) => {
+        let transcript_to_append = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          transcript_to_append += event.results[i][0].transcript;
+        }
+
+        if (transcript_to_append) {
+          setText((prevText) => {
+            const separator = prevText.trim().length > 0 ? " " : "";
+            return prevText + separator + transcript_to_append.trim();
+          });
+        }
+      };
+    }
+  }, [setText]);
 
   const handleMicClick = () => {
+    if (!recognitionRef.current) {
+      return;
+    }
     if (isRecording) {
-      recognitionRef.current?.stop();
+      recognitionRef.current.stop();
     } else {
-      recognitionRef.current?.start();
+      recognitionRef.current.start();
     }
     setIsRecording(!isRecording);
   };

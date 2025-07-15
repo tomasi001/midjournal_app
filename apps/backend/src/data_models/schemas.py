@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -58,6 +58,57 @@ class TextChunk(BaseModel):
     metadata: Dict = Field(default_factory=dict)
 
 
+# Journal Analysis Schemas
+class CoreEmotionalLandscapeSchema(BaseModel):
+    dominant_emotions: List[Dict[str, Any]] = Field(
+        description="e.g., [{'emotion': 'Joy', 'intensity': 0.8}]"
+    )
+    emotional_valence: str = Field(
+        description="e.g., 'Positive', 'Negative', 'Neutral'"
+    )
+    emotional_shifts: List[str] = Field(
+        description="e.g., ['Shift from neutral to anxious after discussing work']"
+    )
+
+
+class KeyThemesTopicsSchema(BaseModel):
+    top_keywords: List[str] = Field(
+        description="e.g., ['work', 'family', 'stress', 'goals']"
+    )
+    identified_themes: List[str] = Field(
+        description="e.g., ['Professional Development', 'Family Dynamics', 'Coping with Pressure']"
+    )
+
+
+class CognitivePatternsSchema(BaseModel):
+    recurring_thoughts: List[str] = Field(description="e.g., ['I need to be perfect']")
+    self_perception: str = Field(description="e.g., 'Overwhelmed but resilient'")
+    beliefs_values: List[str] = Field(
+        description="e.g., ['Hard work is essential', 'Honesty above all']"
+    )
+    problems_challenges: List[str] = Field(
+        description="e.g., ['Time management', 'Dealing with criticism']"
+    )
+
+
+class RelationalDynamicsSchema(BaseModel):
+    mentioned_individuals: List[Dict[str, Any]] = Field(
+        description="e.g., [{'name': 'Sarah', 'relationship': 'colleague', 'sentiment': 'positive'}]"
+    )
+    relationship_tone: List[str] = Field(
+        description="e.g., ['Strained with John', 'Supportive with Emily']"
+    )
+
+
+class PotentialTriggersContextualCluesSchema(BaseModel):
+    events_situations: List[str] = Field(
+        description="e.g., ['Meeting with manager', 'Weekend trip']"
+    )
+    time_bound_indicators: List[str] = Field(
+        description="e.g., ['Monday morning', 'Last night']"
+    )
+
+
 # Journal Entry Schemas
 class JournalEntryBase(BaseModel):
     title: Optional[str] = None
@@ -78,6 +129,11 @@ class JournalEntry(JournalEntryBase):
     keywords: Optional[List[str]] = None
     summary: Optional[str] = None
     image_url: Optional[str] = None
+    emotional_landscape: Optional[CoreEmotionalLandscapeSchema] = None
+    themes_topics: Optional[KeyThemesTopicsSchema] = None
+    cognitive_patterns: Optional[CognitivePatternsSchema] = None
+    relational_dynamics: Optional[RelationalDynamicsSchema] = None
+    contextual_clues: Optional[PotentialTriggersContextualCluesSchema] = None
 
     class Config:
         from_attributes = True
@@ -128,3 +184,8 @@ class JournalAnalysis(BaseModel):
     sentiment: str
     keywords: List[str]
     summary: str
+    emotional_landscape: CoreEmotionalLandscapeSchema
+    themes_topics: KeyThemesTopicsSchema
+    cognitive_patterns: CognitivePatternsSchema
+    relational_dynamics: RelationalDynamicsSchema
+    contextual_clues: PotentialTriggersContextualCluesSchema

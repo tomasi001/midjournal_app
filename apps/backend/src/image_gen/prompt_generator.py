@@ -6,11 +6,20 @@ from src.interfaces.llm_inference_service import LLMInferenceService
 log = structlog.get_logger()
 
 PROMPT_TEMPLATE = """
-Based on the following journal entry insights, create a short, descriptive, and visually rich prompt for an image generation model.
+Create a single, continuous sentence prompt for an image generation model. Do not use line breaks.
+The prompt must start with: "Abstract surreal composition in 9:16 aspect ratio, organic form, floating in space, soft diffused lighting, clean light background, high detail, artistic render, surreal, dreamlike image of"
 
-The prompt should be a single, continuous sentence. Do not use line breaks.
-Focus on evoking the mood and key themes. Be creative and artistic.
+Based on the provided journal entry insights, complete the prompt by describing the following, in order:
+1.  **Primary Subject**: Describe the central form. Use the keywords and content snippet to inspire its shape and essence.
+2.  **Material & Texture**: Describe the surface of the subject. Use the keywords to select a texture. Examples: sheer fabric, coarse matte material, silky flowing material, holographic ethereal liquid, realistic plush fabric, metallic liquid.
+3.  **Color Palette**: Describe the colors. Base the colors on the sentiment.
+    - Positive (joy, excitement): Use warm, vibrant colors like pinks, reds, yellows, oranges, gold.
+    - Negative (sadness, anger): Use cool, dark colors like deep blues, greys, with hints of contrasting color.
+    - Neutral/Calm (peace, contemplation): Use soft, pastel colors like pale blues, yellows, purples, beige.
+4.  **Mood & Atmosphere**: Describe the overall feeling. Use the sentiment to guide this. Examples: gentle flow, tranquil, balanced equilibrium, suspended animation, explosive burst, swirling vortex.
+5.  **Fine Details**: Add specific details. Examples: surface imperfections, micrograin, gold detailing, stitching, scattered refraction.
 
+Journal Entry Insights:
 Sentiment: {sentiment}
 Keywords: {keywords}
 Content Snippet:
@@ -18,7 +27,7 @@ Content Snippet:
 {content}
 ---
 
-Image Prompt:
+Completed Image Prompt (single sentence):
 """
 
 
@@ -49,4 +58,4 @@ class PromptGenerator:
         except Exception as e:
             log.error("Failed to generate image prompt", error=e)
             # Return a fallback prompt
-            return f"A vibrant digital painting representing a {sentiment} mood with themes of {', '.join(keywords)}."
+            return f"Abstract surreal composition, 9:16 aspect ratio, organic form, floating in space, soft diffused lighting, clean light background, high detail, artistic render. A digital painting representing a {sentiment} mood with themes of {', '.join(keywords)}."

@@ -16,36 +16,50 @@ const CameraEntry: React.FC<CameraEntryProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-    }
-  };
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    if (!capturedImage) {
-      const getCamera = async () => {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-          });
+    let isComponentMounted = true;
+
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        if (isComponentMounted) {
+          streamRef.current = stream;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
           }
-        } catch (err) {
-          console.error("Error accessing camera: ", err);
+        } else {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+      } catch (err) {
+        if (isComponentMounted) {
+          console.error("CameraEntry: Error accessing camera:", err);
           toast.error("Could not access camera. Please check permissions.");
         }
-      };
-      getCamera();
+      }
+    };
+
+    const stopCamera = () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        if (videoRef.current) {
+          videoRef.current.srcObject = null;
+        }
+      }
+    };
+
+    if (!capturedImage) {
+      startCamera();
     } else {
       stopCamera();
     }
 
     return () => {
+      isComponentMounted = false;
       stopCamera();
     };
   }, [capturedImage]);
@@ -61,7 +75,6 @@ const CameraEntry: React.FC<CameraEntryProps> = ({
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const dataUrl = canvas.toDataURL("image/png");
         setCapturedImage(dataUrl);
-        stopCamera();
       }
     }
   };

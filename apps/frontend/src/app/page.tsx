@@ -22,7 +22,7 @@ const HomePage = () => {
       />
       <main className="p-6 flex flex-col items-center">
         <div className="text-center mt-8">
-          <h2 className="text-2xl">Welcome back, X</h2>
+          <h2 className="text-2xl">Welcome back,</h2>
           <p className="text-gray-500 mt-2">Ready to make your next entry?</p>
         </div>
 

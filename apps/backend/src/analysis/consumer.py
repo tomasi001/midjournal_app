@@ -63,14 +63,32 @@ def callback(ch, method, properties, body, deps):
         mq_client: RabbitMQClient = deps["mq_client"]
 
         # Run the async analysis function
-        title, sentiment, keywords, summary = asyncio.run(
-            analysis_service.analyze_entry(content)
-        )
+        (
+            title,
+            sentiment,
+            keywords,
+            summary,
+            emotional_landscape,
+            themes_topics,
+            cognitive_patterns,
+            relational_dynamics,
+            contextual_clues,
+        ) = asyncio.run(analysis_service.analyze_entry(content))
         log.info("Analysis completed", entry_id=str(entry_id))
 
         # Update the database
         analysis_service.update_journal_entry_with_analysis(
-            db, entry_id, title, sentiment, keywords, summary
+            db,
+            entry_id,
+            title,
+            sentiment,
+            keywords,
+            summary,
+            emotional_landscape,
+            themes_topics,
+            cognitive_patterns,
+            relational_dynamics,
+            contextual_clues,
         )
         log.info("Database updated with analysis", entry_id=str(entry_id))
 

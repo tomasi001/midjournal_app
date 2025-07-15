@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
 import LargeActionButton from "@/components/v0/LargeActionButton";
@@ -22,9 +23,11 @@ interface JournalEntry {
   image_url: string;
 }
 
-const JournalResultPage = ({ params }: { params: { id: string } }) => {
+const JournalResultPage = () => {
+  const params = useParams();
   const { token } = useAuth();
   const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [formattedDate, setFormattedDate] = useState("");
   const [loading, setLoading] = useState(true);
 
   const entryId = params.id;
@@ -43,6 +46,7 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
         if (response.ok) {
           const data = await response.json();
           setEntry(data);
+          setFormattedDate(new Date(data.created_at).toLocaleDateString());
         } else {
           console.error("Failed to fetch journal entry.");
           setEntry(null);
@@ -55,7 +59,9 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
       }
     };
 
-    fetchEntry();
+    if (entryId) {
+      fetchEntry();
+    }
   }, [entryId, token]);
 
   if (loading) {
@@ -110,9 +116,7 @@ const JournalResultPage = ({ params }: { params: { id: string } }) => {
               <h2 className="text-3xl font-bold">
                 “{entry.title || "Untitled"}”
               </h2>
-              <p className="text-gray-500 mt-2">
-                {new Date(entry.created_at).toLocaleDateString()}
-              </p>
+              <p className="text-gray-500 mt-2">{formattedDate}</p>
 
               <Link
                 href={`/journal/${entryId}/insights`}
