@@ -67,11 +67,15 @@ class JournalService:
 
         return db_entry
 
-    def get_journal_entries(self, user_id: UUID) -> list[JournalEntryModel]:
+    def get_journal_entries(
+        self, user_id: UUID, limit: int, offset: int
+    ) -> list[JournalEntryModel]:
         return (
             self.db_session.query(JournalEntryModel)
             .filter(JournalEntryModel.user_id == user_id)
             .order_by(JournalEntryModel.created_at.desc())
+            .offset(offset)
+            .limit(limit)
             .all()
         )
 

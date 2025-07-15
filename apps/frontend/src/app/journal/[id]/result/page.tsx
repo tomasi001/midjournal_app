@@ -14,13 +14,14 @@ import {
 import { withAuth } from "@/components/with-auth";
 import { useAuth } from "@/context/auth-context";
 import Iridescence from "@/components/ui/Iridescence";
+import LoadingText from "@/components/ui/LoadingText";
 
 interface JournalEntry {
   id: string;
   entry_number: number;
-  title: string;
+  title: string | null;
   created_at: string;
-  image_url: string;
+  image_url: string | null;
 }
 
 const JournalResultPage = () => {
@@ -64,6 +65,38 @@ const JournalResultPage = () => {
     }
   }, [entryId, token]);
 
+  useEffect(() => {
+    if (!entry || entry.title) {
+      return;
+    }
+
+    const pollForTitle = async () => {
+      if (!token || !entryId) return;
+      try {
+        const response = await fetch(`/api/journal/entries/${entryId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.title) {
+            setEntry(data);
+          }
+        }
+      } catch (error) {
+        console.error(
+          "An error occurred while polling for entry title:",
+          error
+        );
+      }
+    };
+
+    const interval = setInterval(pollForTitle, 2000);
+
+    return () => clearInterval(interval);
+  }, [entry, entryId, token]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -96,40 +129,40 @@ const JournalResultPage = () => {
       <main className="p-6 flex justify-center flex-grow">
         <div className="relative mt-8 w-full max-w-sm">
           {/* Card container */}
-          <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
-            {/* Image */}
-            <div className="h-96 w-full bg-gray-100">
-              {entry.image_url ? (
-                <div
-                  className="h-full w-full bg-cover bg-center"
-                  style={{
-                    backgroundImage: `url('${entry.image_url}')`,
-                  }}
-                ></div>
-              ) : (
-                <Iridescence />
-              )}
-            </div>
+          <Link href={`/journal/${entryId}/insights`} className="block mt-4">
+            <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+              {/* Image */}
+              <div className="h-96 w-full bg-gray-100">
+                {entry.image_url ? (
+                  <div
+                    className="h-full w-full bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url('${entry.image_url}')`,
+                    }}
+                  ></div>
+                ) : (
+                  <Iridescence />
+                )}
+              </div>
 
-            {/* Text content */}
-            <div className="pt-16 pb-6 px-6 text-center">
-              <h2 className="text-3xl font-bold">
-                “{entry.title || "Untitled"}”
-              </h2>
-              <p className="text-gray-500 mt-2">{formattedDate}</p>
-
-              <Link
-                href={`/journal/${entryId}/insights`}
-                className="block mt-4"
-              >
-                <div className="flex justify-between items-center text-sm text-gray-400">
-                  <ArrowsPointingOutIcon className="h-6 w-6" />
-                  <span className="tracking-widest">TAP CARD FOR INSIGHTS</span>
-                  <ArrowUpOnSquareIcon className="h-6 w-6" />
-                </div>
-              </Link>
+              {/* Text content */}
+              <div className="pt-16 pb-6 px-6 text-center">
+                <h2 className="text-3xl font-bold min-h-9 flex items-center justify-center">
+                  {entry.title ? `“${entry.title}”` : <LoadingText />}
+                </h2>
+                <p className="text-gray-500 mt-2">{formattedDate}</p>
+                {entry.title && (
+                  <div className="flex justify-between items-center text-sm text-gray-400">
+                    <ArrowsPointingOutIcon className="h-6 w-6" />
+                    <span className="tracking-widest">
+                      TAP CARD FOR INSIGHTS
+                    </span>
+                    <ArrowUpOnSquareIcon className="h-6 w-6" />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </Link>
 
           {/* Badge */}
           <div className="absolute top-[320px] left-1/2 -translate-x-1/2 bg-white rounded-full w-24 h-24 flex items-center justify-center border-4 border-white shadow-lg">

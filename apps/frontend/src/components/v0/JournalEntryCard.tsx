@@ -14,9 +14,10 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   imageUrl,
   entryNumber,
 }) => {
+  console.log("imageUrl", imageUrl);
   if (!imageUrl) {
     return (
-      <div className="aspect-[2/3] rounded-lg bg-gray-100 overflow-hidden">
+      <div className="aspect-[2/3] rounded-lg bg-gray-100 overflow-hidden w-full h-full">
         <Iridescence />
       </div>
     );

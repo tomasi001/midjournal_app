@@ -1,6 +1,7 @@
 "use client";
 
 import { AuthProvider } from "@/context/auth-context";
+import { JournalEntriesProvider } from "@/context/journal-entries-context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import React from "react";
@@ -25,8 +26,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <AuthProvider>
-        {children}
-        <Toaster position={isDesktop ? "bottom-right" : "top-center"} />
+        <JournalEntriesProvider>
+          {children}
+          <Toaster position={isDesktop ? "bottom-right" : "top-center"} />
+        </JournalEntriesProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -25,7 +25,7 @@ const CameraEntry: React.FC<CameraEntryProps> = ({
     const startCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: { facingMode: "environment" },
         });
         if (isComponentMounted) {
           streamRef.current = stream;

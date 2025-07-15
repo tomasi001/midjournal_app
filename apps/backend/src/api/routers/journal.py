@@ -33,8 +33,12 @@ def create_journal_entry(
 def get_journal_entries(
     current_user: User = Depends(get_current_user),
     journal_service: JournalService = Depends(get_journal_service),
+    limit: int = 10,
+    offset: int = 0,
 ):
-    return journal_service.get_journal_entries(user_id=current_user.id)
+    return journal_service.get_journal_entries(
+        user_id=current_user.id, limit=limit, offset=offset
+    )
 
 
 @router.get("/entries/{entry_id}", response_model=JournalEntry)

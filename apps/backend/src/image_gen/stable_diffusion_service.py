@@ -4,10 +4,16 @@ from diffusers import StableDiffusionPipeline
 import structlog
 from PIL import Image
 import io
+import threading
 
 from src.interfaces.image_generation_service import ImageGenerationService
 
 log = structlog.get_logger()
+
+# A lock to ensure that only one thread can access the model at a time.
+# This is a class-level lock, so it will be shared across all instances
+# of StableDiffusionImageGenerationService.
+model_lock = threading.Lock()
 
 
 class StableDiffusionImageGenerationService(ImageGenerationService):
@@ -61,30 +67,40 @@ class StableDiffusionImageGenerationService(ImageGenerationService):
             )
 
         log.info(
-            "Generating image with Stable Diffusion",
+            "Acquiring lock for Stable Diffusion model",
             prompt=prompt,
             user_id=user_id,
             style_parameters=style_parameters,
         )
 
-        try:
-            # Note: style_parameters could be used here for things like num_inference_steps, guidance_scale, etc.
-            image: Image.Image = self.pipe(prompt, **style_parameters).images[0]
-
-            # Convert the PIL Image to bytes
-            img_byte_arr = io.BytesIO()
-            image.save(img_byte_arr, format="PNG")
-            img_byte_arr = img_byte_arr.getvalue()
-
-            log.info("Image generated successfully", prompt=prompt)
-            return img_byte_arr
-
-        except Exception as e:
-            log.error(
-                "Error during Stable Diffusion image generation", error=e, exc_info=True
+        with model_lock:
+            log.info(
+                "Lock acquired. Generating image with Stable Diffusion",
+                prompt=prompt,
+                user_id=user_id,
+                style_parameters=style_parameters,
             )
-            # Return placeholder bytes on error
-            return (
-                b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00,"
-                b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
-            )
+
+            try:
+                # Note: style_parameters could be used here for things like num_inference_steps, guidance_scale, etc.
+                image: Image.Image = self.pipe(prompt, **style_parameters).images[0]
+
+                # Convert the PIL Image to bytes
+                img_byte_arr = io.BytesIO()
+                image.save(img_byte_arr, format="PNG")
+                img_byte_arr = img_byte_arr.getvalue()
+
+                log.info("Image generated successfully", prompt=prompt)
+                return img_byte_arr
+
+            except Exception as e:
+                log.error(
+                    "Error during Stable Diffusion image generation",
+                    error=e,
+                    exc_info=True,
+                )
+                # Return placeholder bytes on error
+                return (
+                    b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00,"
+                    b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+                )

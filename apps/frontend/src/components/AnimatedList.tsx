@@ -35,7 +35,7 @@ const AnimatedItem: React.FC<AnimatedItemProps> = ({
       initial={{ scale: 0.9, opacity: 0 }}
       animate={inView ? { scale: 1, opacity: 1 } : { scale: 0.9, opacity: 0 }}
       transition={{ duration: 0.4, delay }}
-      style={{ marginBottom: "1rem", cursor: "pointer" }}
+      style={{ cursor: "pointer" }}
     >
       {children}
     </motion.div>
@@ -51,6 +51,10 @@ interface AnimatedListProps {
   itemClassName?: string;
   displayScrollbar?: boolean;
   initialSelectedIndex?: number;
+  listClassName?: string;
+  onLoadMore?: () => void;
+  isLoading?: boolean;
+  hasMore?: boolean;
 }
 
 const AnimatedList: React.FC<AnimatedListProps> = ({
@@ -62,6 +66,10 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   itemClassName = "",
   displayScrollbar = true,
   initialSelectedIndex = -1,
+  listClassName = "",
+  onLoadMore,
+  isLoading,
+  hasMore,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] =
@@ -78,6 +86,14 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
     setBottomGradientOpacity(
       scrollHeight <= clientHeight ? 0 : Math.min(bottomDistance / 50, 1)
     );
+    if (
+      onLoadMore &&
+      !isLoading &&
+      hasMore &&
+      scrollHeight - scrollTop - clientHeight < 200
+    ) {
+      onLoadMore();
+    }
   };
 
   useEffect(() => {
@@ -136,7 +152,9 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
     <div className={`scroll-list-container ${className}`}>
       <div
         ref={listRef}
-        className={`scroll-list ${!displayScrollbar ? "no-scrollbar" : ""}`}
+        className={`scroll-list ${listClassName} ${
+          !displayScrollbar ? "no-scrollbar" : ""
+        }`}
         onScroll={handleScroll}
       >
         {items.map((item, index) => (
@@ -161,6 +179,11 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
             </div>
           </AnimatedItem>
         ))}
+        {isLoading && (
+          <div className="flex justify-center items-center p-4 col-span-full">
+            Loading...
+          </div>
+        )}
       </div>
       {showGradients && (
         <>

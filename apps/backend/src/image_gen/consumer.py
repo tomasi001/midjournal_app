@@ -3,6 +3,8 @@ import os
 import json
 from uuid import UUID
 from sqlalchemy.orm import Session
+import structlog
+
 
 # Add the project root to the Python path to allow for absolute imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -15,12 +17,16 @@ from src.storage.minio_client import MinIOFileStorageService
 from src.interfaces.file_storage_service import FileStorageService
 from src.interfaces.image_generation_service import ImageGenerationService
 
+log = structlog.get_logger()
 
-def get_dependencies(
-    image_gen_service: ImageGenerationService, storage_service: FileStorageService
-):
+
+def get_dependencies():
     """Provides dependencies for the image generation consumer."""
+    log.info("Creating new dependencies for image-gen consumer thread.")
     db_session = next(get_db())
+    image_gen_service = StableDiffusionImageGenerationService()
+    storage_service = MinIOFileStorageService()
+
     return {
         "db_session": db_session,
         "image_gen_service": image_gen_service,
@@ -47,7 +53,11 @@ def image_generation_callback(ch, method, properties, body, deps):
             return
 
         journal_entry_id = UUID(journal_entry_id_str)
-        print(f"Processing image generation for journal entry {journal_entry_id}")
+        log.info(
+            "Processing image generation request",
+            journal_entry_id=journal_entry_id,
+            user_id=user_id,
+        )
 
         # 1. Generate the image bytes
         image_bytes = image_gen_service.generate_image(prompt, user_id, {})
@@ -59,7 +69,7 @@ def image_generation_callback(ch, method, properties, body, deps):
         )
 
         if not image_url:
-            print("Failed to upload image to storage. Aborting update.")
+            log.error("Failed to upload image to storage. Aborting update.")
             return
 
         # 3. Update the journal entry with the new image URL
@@ -70,36 +80,30 @@ def image_generation_callback(ch, method, properties, body, deps):
         )
         db_session.commit()
 
-        print(f"Updated journal entry {journal_entry_id} with image URL: {image_url}")
+        log.info(
+            "Updated journal entry with image URL",
+            journal_entry_id=journal_entry_id,
+            image_url=image_url,
+        )
 
     except json.JSONDecodeError:
-        print("Failed to decode message body")
+        log.error("Failed to decode message body", body=body)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        log.error("An unexpected error occurred in image-gen callback", error=e)
         # Re-raise the exception to trigger nack and DLQ processing
         raise
 
 
 def main():
-    print("Loading image generation model...")
-    image_gen_service = StableDiffusionImageGenerationService()
-    print("Model loaded. Initializing services...")
-
-    storage_service = MinIOFileStorageService()
-
     rabbitmq_client = RabbitMQClient()
     queue_name = "image-gen-queue"
 
-    print(f"Starting to consume from '{queue_name}'...")
-
-    # Use a nested function (closure) to pass the pre-loaded services
-    def get_deps_func():
-        return get_dependencies(image_gen_service, storage_service)
+    log.info(f"Starting to consume from '{queue_name}'...")
 
     rabbitmq_client.subscribe(
         queue_name=queue_name,
         callback=image_generation_callback,
-        get_dependencies_func=get_deps_func,
+        get_dependencies_func=get_dependencies,
     )
 
 

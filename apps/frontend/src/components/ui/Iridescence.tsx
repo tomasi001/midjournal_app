@@ -84,6 +84,10 @@ export default function Iridescence({
       }
     }
     window.addEventListener("resize", resize, false);
+
+    const resizeObserver = new ResizeObserver(() => resize());
+    resizeObserver.observe(ctn);
+
     resize();
 
     const geometry = new Triangle(gl);
@@ -134,6 +138,7 @@ export default function Iridescence({
     return () => {
       cancelAnimationFrame(animateId);
       window.removeEventListener("resize", resize);
+      resizeObserver.disconnect();
       if (mouseReact) {
         ctn.removeEventListener("mousemove", handleMouseMove);
       }

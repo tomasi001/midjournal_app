@@ -1,37 +1,111 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Header from "@/components/v0/Header";
-import FeedbackButton from "@/components/v0/FeedbackButton";
-import MediumSelectionButton from "@/components/v0/MediumSelectionButton";
-import LargeActionButton from "@/components/v0/LargeActionButton";
-import {
-  ChevronLeftIcon,
-  MicrophoneIcon,
-  CameraIcon,
-} from "@heroicons/react/24/outline";
-import { Keyboard } from "lucide-react";
-import { toast } from "sonner";
-
-import { useAuth } from "@/context/auth-context";
-import KeyboardEntry from "@/components/journal-entry/KeyboardEntry";
-import VoiceEntry from "@/components/journal-entry/VoiceEntry";
 import CameraEntry from "@/components/journal-entry/CameraEntry";
 import { withAuth } from "@/components/with-auth";
+import { useAuth } from "@/context/auth-context";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import Header from "@/components/v0/Header";
+import FeedbackButton from "@/components/v0/FeedbackButton";
+import SubmitButton from "@/components/v0/SubmitButton";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import InputToolbar from "@/components/journal-entry/InputToolbar";
+import JournalEntryComposer from "@/components/journal-entry/JournalEntryComposer";
 
 const JournalEntryPage = () => {
   const { token } = useAuth();
   const router = useRouter();
 
-  const [selectedMedium, setSelectedMedium] = useState<
-    "keyboard" | "voice" | "camera" | null
-  >(null);
   const [text, setText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const footerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.visualViewport) {
+      const visualViewport = window.visualViewport;
+
+      const handleResize = () => {
+        if (footerRef.current) {
+          // When the keyboard is open, visualViewport.height shrinks.
+          // We calculate how much space the keyboard takes up.
+          const keyboardHeight = window.innerHeight - visualViewport.height;
+
+          // We move the footer up by the height of the keyboard.
+          // We also need to account for the visualViewport.offsetTop if the browser window itself is scrolled.
+          const offset = keyboardHeight - visualViewport.offsetTop - 10;
+
+          if (offset > 0) {
+            footerRef.current.style.bottom = `${offset}px`;
+          } else {
+            footerRef.current.style.bottom = "0px";
+          }
+        }
+      };
+
+      visualViewport.addEventListener("resize", handleResize);
+      return () => visualViewport.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !recognitionRef.current) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
+        recognitionRef.current = recognition;
+
+        recognition.onresult = (event) => {
+          let transcript_to_append = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript_to_append += event.results[i][0].transcript;
+          }
+
+          if (transcript_to_append) {
+            setText((prevText) => {
+              const separator = prevText.trim().length > 0 ? " " : "";
+              return prevText + separator + transcript_to_append.trim();
+            });
+          }
+        };
+
+        recognition.onend = () => {
+          if (isRecording) {
+            setIsRecording(false);
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Speech recognition error", event.error);
+          toast.error(`Speech recognition error: ${event.error}`);
+          if (isRecording) {
+            setIsRecording(false);
+          }
+        };
+      } else {
+        toast.error("Speech recognition not supported in this browser.");
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current && isRecording) {
+        recognitionRef.current.stop();
+        setIsRecording(false);
+      }
+    };
+  }, [isRecording]);
 
   const dataURLtoFile = (dataurl: string, filename: string): File | null => {
     const arr = dataurl.split(",");
@@ -53,7 +127,6 @@ const JournalEntryPage = () => {
       return;
     }
     setIsLoading(true);
-    setText(""); // Clear previous text
     const imageFile = dataURLtoFile(capturedImage, `capture-${Date.now()}.png`);
     if (!imageFile) {
       toast.error("There was an error processing the image.");
@@ -87,15 +160,17 @@ const JournalEntryPage = () => {
         const { value, done: readerDone } = await reader.read();
         done = readerDone;
         if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          setText((prev) => prev + chunk);
+          const chunk = decoder.decode(value, { stream: false });
           fullText += chunk;
         }
       }
 
       if (fullText.trim()) {
-        setSelectedMedium("keyboard");
+        setText(
+          (prev) => (prev.trim() ? `${prev.trim()} ` : "") + fullText.trim()
+        );
         setCapturedImage(null);
+        setIsCameraOpen(false);
       } else {
         toast.error("Could not extract any text from the image.");
       }
@@ -107,6 +182,11 @@ const JournalEntryPage = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // TODO: IMPLEMENT ACTUAL DOCUMENT PARSING FOR TEXT FILES
+  const handleDocumentOcrRequest = async (file: File) => {
+    console.log("submitting file", file.name);
   };
 
   const handleTextSubmit = async () => {
@@ -144,147 +224,84 @@ const JournalEntryPage = () => {
     }
   };
 
-  const handleImageSubmit = async () => {
-    if (!capturedImage) {
-      toast.error("No image has been captured.");
+  const handleMicClick = () => {
+    if (!recognitionRef.current) {
       return;
     }
-    setIsLoading(true);
-    const imageFile = dataURLtoFile(capturedImage, `capture-${Date.now()}.png`);
-    if (!imageFile) {
-      toast.error("There was an error processing the image.");
-      setIsLoading(false);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", imageFile);
-
-    try {
-      const response = await fetch("/api/ingest/upload", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast.success(
-          result.message || `'${imageFile.name}' submitted successfully.`
-        );
-        router.push("/");
-      } else {
-        toast.error(
-          `'${imageFile.name}' failed: ${result.detail || "Unknown error"}`
-        );
-      }
-    } catch (error) {
-      toast.error(`An error occurred submitting '${imageFile.name}'.`);
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (selectedMedium === "keyboard" || selectedMedium === "voice") {
-      await handleTextSubmit();
-    } else if (selectedMedium === "camera") {
-      await handleImageSubmit();
-    }
-  };
-
-  const renderMainContent = () => {
-    switch (selectedMedium) {
-      case "keyboard":
-        return <KeyboardEntry text={text} setText={setText} />;
-      case "voice":
-        return (
-          <VoiceEntry
-            text={text}
-            setText={setText}
-            isRecording={isRecording}
-            setIsRecording={setIsRecording}
-          />
-        );
-      case "camera":
-        return (
-          <CameraEntry
-            capturedImage={capturedImage}
-            setCapturedImage={setCapturedImage}
-            onExtractText={handleOcrRequest}
-          />
-        );
-      default:
-        return (
-          <div className="flex flex-col items-center flex-grow">
-            <p className="text-gray-500 mt-16">Choose your medium to begin:</p>
-            <div className="flex mt-4">
-              <MediumSelectionButton
-                icon={<Keyboard className="h-10 w-10 text-gray-600" />}
-                onClick={() => setSelectedMedium("keyboard")}
-              />
-              <MediumSelectionButton
-                icon={<MicrophoneIcon className="h-10 w-10 text-gray-600" />}
-                onClick={() => setSelectedMedium("voice")}
-              />
-              <MediumSelectionButton
-                icon={<CameraIcon className="h-10 w-10 text-gray-600" />}
-                onClick={() => setSelectedMedium("camera")}
-              />
-            </div>
-          </div>
-        );
-    }
-  };
-
-  const handleBack = () => {
     if (isRecording) {
-      setIsRecording(false);
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
     }
-    setSelectedMedium(null);
-    setCapturedImage(null);
-    setText("");
+    setIsRecording(!isRecording);
   };
+
+  const handleCameraClick = () => {
+    setIsCameraOpen(true);
+  };
+
+  const handleDocumentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleDocumentOcrRequest(file);
+    }
+  };
+
+  const hasContent = text.trim().length > 0;
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
       <Header
         leftContent={
-          selectedMedium ? (
-            <button onClick={handleBack} className="flex items-center">
-              <ChevronLeftIcon className="h-8 w-8 text-black" />
-              <span className="ml-2 text-2xl font-bold">Journal</span>
-            </button>
-          ) : (
-            <Link href="/" className="flex items-center">
-              <ChevronLeftIcon className="h-8 w-8 text-black" />
-              <span className="ml-2 text-2xl font-bold">Journal</span>
-            </Link>
-          )
+          <Link href="/" className="flex items-center">
+            <ChevronLeftIcon className="h-8 w-8 text-black" />
+            <span className="ml-2 text-2xl font-bold">Journal</span>
+          </Link>
         }
         rightContent={<FeedbackButton />}
       />
-      <main className="p-6 flex flex-col items-center flex-grow">
-        {renderMainContent()}
+      <main className="p-6 flex flex-col items-center flex-grow pb-32">
+        <JournalEntryComposer text={text} setText={setText} />
       </main>
-      <footer className="p-6">
-        <LargeActionButton
-          onClick={handleSubmit}
-          disabled={
-            isLoading ||
-            !selectedMedium ||
-            (selectedMedium === "keyboard" && !text) ||
-            (selectedMedium === "voice" && !text) ||
-            (selectedMedium === "camera" && !capturedImage)
-          }
-        >
-          {isLoading ? "SUBMITTING..." : "SUBMIT"}
-        </LargeActionButton>
+      <footer
+        ref={footerRef}
+        className="fixed bottom-0 left-0 right-0 p-6 flex justify-between items-center"
+        style={{ transform: "translateZ(0)" }}
+      >
+        <InputToolbar
+          onCameraClick={handleCameraClick}
+          onVoiceClick={handleMicClick}
+          onDocumentClick={handleDocumentClick}
+          isRecording={isRecording}
+        />
+        {hasContent && (
+          <div>
+            <SubmitButton onClick={handleTextSubmit} disabled={isLoading}>
+              {isLoading ? "SUBMITTING..." : "SUBMIT"}
+            </SubmitButton>
+          </div>
+        )}
       </footer>
+      <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
+        <DialogContent className="max-w-full h-full flex items-center justify-center">
+          <CameraEntry
+            capturedImage={capturedImage}
+            setCapturedImage={setCapturedImage}
+            onExtractText={handleOcrRequest}
+          />
+        </DialogContent>
+      </Dialog>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        className="hidden"
+        accept="image/*,application/pdf"
+      />
     </div>
   );
 };

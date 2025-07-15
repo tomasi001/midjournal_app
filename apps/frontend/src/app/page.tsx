@@ -6,8 +6,13 @@ import Header from "@/components/v0/Header";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { PlusIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { withAuth } from "@/components/with-auth";
+import { useJournalEntries } from "@/context/journal-entries-context";
+import Image from "next/image";
+import Iridescence from "@/components/ui/Iridescence";
 
 const HomePage = () => {
+  const { latestEntry } = useJournalEntries();
+
   return (
     <div className="bg-white text-black min-h-screen">
       <Header
@@ -32,20 +37,6 @@ const HomePage = () => {
           </button>
         </Link>
 
-        <div className="w-full mt-12">
-          <div className="flex justify-between items-center">
-            <Link href="/patterns">
-              <h3 className="text-xl font-semibold">Patterns</h3>
-            </Link>
-            <Link href="/patterns">
-              <ChevronRightIcon className="h-6 w-6 text-gray-400" />
-            </Link>
-          </div>
-          <Link href="/patterns">
-            <div className="bg-gray-100 h-48 rounded-lg mt-2"></div>
-          </Link>
-        </div>
-
         <div className="w-full mt-8">
           <div className="flex justify-between items-center">
             <Link href="/library">
@@ -56,6 +47,31 @@ const HomePage = () => {
             </Link>
           </div>
           <Link href="/library">
+            <div className="bg-gray-100 h-48 rounded-lg mt-2 relative overflow-hidden">
+              {latestEntry && latestEntry.image_url ? (
+                <Image
+                  src={latestEntry.image_url}
+                  alt="Latest journal entry"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+              ) : (
+                <Iridescence />
+              )}
+            </div>
+          </Link>
+        </div>
+        <div className="w-full mt-12">
+          <div className="flex justify-between items-center">
+            <Link href="/patterns">
+              <h3 className="text-xl font-semibold">Patterns</h3>
+            </Link>
+            <Link href="/patterns">
+              <ChevronRightIcon className="h-6 w-6 text-gray-400" />
+            </Link>
+          </div>
+          <Link href="/patterns">
             <div className="bg-gray-100 h-48 rounded-lg mt-2"></div>
           </Link>
         </div>

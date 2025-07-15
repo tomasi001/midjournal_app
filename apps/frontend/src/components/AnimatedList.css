@@ -4,7 +4,7 @@
 }
 
 .scroll-list {
-  max-height: 50vh;
+  max-height: 76vh;
   overflow-y: auto;
   padding: 16px;
 }
@@ -14,7 +14,7 @@
 }
 
 .scroll-list::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+  background: var(--background);
 }
 
 .scroll-list::-webkit-scrollbar-thumb {
@@ -56,7 +56,7 @@
   left: 0;
   right: 0;
   height: 50px;
-  background: linear-gradient(to bottom, hsl(var(--background)), transparent);
+  background: linear-gradient(to bottom, white, transparent);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -67,7 +67,7 @@
   left: 0;
   right: 0;
   height: 100px;
-  background: linear-gradient(to top, hsl(var(--background)), transparent);
+  background: linear-gradient(to top, white, transparent);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }

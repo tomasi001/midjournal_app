@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/v0/Header";
 import FeedbackButton from "@/components/v0/FeedbackButton";
@@ -12,49 +12,19 @@ import {
 } from "@heroicons/react/24/outline";
 import { withAuth } from "@/components/with-auth";
 import { useAuth } from "@/context/auth-context";
-
-interface JournalEntry {
-  id: string;
-  entry_number: number;
-  image_url: string;
-}
+import AnimatedList from "@/components/AnimatedList";
+import { useJournalEntries } from "@/context/journal-entries-context";
 
 const JournalLibraryPage = () => {
+  const { entries, loading, hasMore, loadMoreEntries, refreshEntries } =
+    useJournalEntries();
   const { token } = useAuth();
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchEntries = async () => {
-      if (!token) return;
-      setLoading(true);
-      try {
-        const response = await fetch("/api/journal/entries", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setEntries(data);
-        } else {
-          console.error("Failed to fetch journal entries.");
-          setEntries([]);
-        }
-      } catch (error) {
-        console.error(
-          "An error occurred while fetching journal entries:",
-          error
-        );
-        setEntries([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEntries();
-  }, [token]);
+    if (token) {
+      refreshEntries();
+    }
+  }, [token, refreshEntries]);
 
   return (
     <div className="bg-white text-black min-h-screen">
@@ -84,18 +54,24 @@ const JournalLibraryPage = () => {
           <SparklesIcon className="absolute right-4 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-400" />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-8">
-          {loading ? (
+        <div className="mt-8">
+          {entries.length > 0 ? (
+            <AnimatedList
+              listClassName="grid grid-cols-2 gap-4"
+              items={entries.map((entry) => (
+                <JournalEntryCard
+                  key={entry.id}
+                  entryId={entry.id}
+                  imageUrl={entry.image_url}
+                  entryNumber={entry.entry_number}
+                />
+              ))}
+              onLoadMore={loadMoreEntries}
+              isLoading={loading}
+              hasMore={hasMore}
+            />
+          ) : loading ? (
             <p>Loading entries...</p>
-          ) : entries.length > 0 ? (
-            entries.map((entry) => (
-              <JournalEntryCard
-                key={entry.id}
-                entryId={entry.id}
-                imageUrl={entry.image_url}
-                entryNumber={entry.entry_number}
-              />
-            ))
           ) : (
             <p>No entries found.</p>
           )}
