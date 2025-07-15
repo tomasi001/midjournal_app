@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import AnimatedList from "./AnimatedList";
 import "./AnimatedList.css";
 import JournalCard from "./JournalCard";
 import "./JournalCard.css";
+import Image from "next/image"; // Importing Image from next/image
 
 // Define the type for a journal entry based on the backend schema
 export interface JournalEntry {
@@ -75,10 +76,12 @@ export function JournalEntriesList({
 
                   {entry.image_url && (
                     <div className="mt-4">
-                      <img
+                      <Image
                         src={entry.image_url}
                         alt={entry.title || "Generated image"}
                         className="w-full h-auto rounded-lg"
+                        width={500} // Set appropriate width
+                        height={300} // Set appropriate height
                       />
                     </div>
                   )}

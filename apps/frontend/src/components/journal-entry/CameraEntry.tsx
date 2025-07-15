@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect } from "react";
 import { toast } from "sonner";
+import Image from "next/image"; // Importing Image from next/image
 
 interface CameraEntryProps {
   capturedImage: string | null;
@@ -83,10 +84,12 @@ const CameraEntry: React.FC<CameraEntryProps> = ({
     <div className="w-full h-full flex-grow flex flex-col items-center justify-center">
       {capturedImage ? (
         <>
-          <img
+          <Image
             src={capturedImage}
             alt="Captured"
             className="max-w-full max-h-[70vh] rounded-lg"
+            width={500}
+            height={500}
           />
           <div className="flex space-x-4 mt-4">
             <button
