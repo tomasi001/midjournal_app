@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
   },
   // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.(glsl|vs|fs|vert|frag)$/,
+      use: ["raw-loader", "glslify-loader"],
+    });
+
+    return config;
+  },
 };
 
 export default nextConfig;

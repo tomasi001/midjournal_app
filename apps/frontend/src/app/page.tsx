@@ -3,12 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import Header from "@/components/v0/Header";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
-import { PlusIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { withAuth } from "@/components/with-auth";
 import { useJournalEntries } from "@/context/journal-entries-context";
 import Image from "next/image";
 import Iridescence from "@/components/ui/Iridescence";
+import OrganicSphere from "@/components/sphere/OrganicSphere";
 
 const HomePage = () => {
   const { latestEntry } = useJournalEntries();
@@ -25,17 +26,37 @@ const HomePage = () => {
           </Link>
         }
       />
-      <main className="p-6 flex flex-col items-center">
-        <div className="text-center mt-8">
-          <h2 className="text-2xl">Welcome back,</h2>
-          <p className="text-gray-500 mt-2">Ready to make your next entry?</p>
+      <main className="pb-6 px-6 flex flex-col items-center">
+        <div className="w-full">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search or ask something..."
+              className="w-full border-1 border-gray-300 rounded-full py-2 pl-5 pr-12 text-md focus:outline-none focus:ring-2 focus:ring-gray-300"
+            />
+            <SparklesIcon className="absolute right-4 top-1/2 -translate-y-1/2 h-7 w-7 text-black" />
+          </div>
+        </div>
+        <div className="flex flex-col items-center text-center">
+          <div className="w-64 h-64 relative">
+            <Link href="/journal/entry" className="mt-12">
+              <OrganicSphere />
+            </Link>
+          </div>
+          <div className="text-gray-500">
+            <p>Verbalise your thoughts. Visualise your mind.</p>
+            <p>Tap the orb to begin.</p>
+          </div>
         </div>
 
-        <Link href="/journal/entry" className="mt-12">
-          <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full w-40 h-40 flex items-center justify-center mx-auto shadow-md">
-            <PlusIcon className="h-24 w-24 text-gray-500" />
-          </button>
-        </Link>
+        <div className="w-full mt-4">
+          <Link href="/journal/entry" className="mt-12">
+            <textarea
+              placeholder="Or write what's on your mind here..."
+              className="w-full border-1 border-gray-300 text-gray rounded-2xl p-4 text-md focus:outline-none focus:ring-2 focus:ring-gray-300 h-32"
+            />
+          </Link>
+        </div>
 
         <div className="w-full mt-8">
           <div className="flex justify-between items-center">
