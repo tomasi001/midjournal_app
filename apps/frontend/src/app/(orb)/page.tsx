@@ -10,24 +10,27 @@ import { useJournalEntries } from "@/context/journal-entries-context";
 import Image from "next/image";
 import Iridescence from "@/components/ui/Iridescence";
 import OrganicSphere from "@/components/sphere/OrganicSphere";
+import { motion } from "framer-motion";
 
 const HomePage = () => {
   const { latestEntry } = useJournalEntries();
 
   return (
     <div className="bg-white text-black min-h-screen">
-      <Header
-        leftContent={
-          <h1 className="text-2xl font-bold text-black">Midjournal</h1>
-        }
-        rightContent={
-          <Link href="/profile">
-            <UserCircleIcon className="h-10 w-10 text-black" />
-          </Link>
-        }
-      />
+      <div>
+        <Header
+          leftContent={
+            <h1 className="text-2xl font-bold text-black">Midjournal</h1>
+          }
+          rightContent={
+            <Link href="/profile">
+              <UserCircleIcon className="h-10 w-10 text-black" />
+            </Link>
+          }
+        />
+      </div>
       <main className="pb-6 px-6 flex flex-col items-center">
-        <div className="w-full">
+        <div className="w-full relative z-10">
           <div className="relative">
             <input
               type="text"
@@ -38,11 +41,16 @@ const HomePage = () => {
           </div>
         </div>
         <div className="flex flex-col items-center text-center">
-          <div className="w-64 h-64 relative">
+          <motion.div
+            layoutId="orb"
+            className="w-64 h-64 relative"
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            animate={{ scale: 1 }}
+          >
             <Link href="/journal/entry" className="mt-12">
               <OrganicSphere />
             </Link>
-          </div>
+          </motion.div>
           <div className="text-gray-500">
             <p>Verbalise your thoughts. Visualise your mind.</p>
             <p>Tap the orb to begin.</p>

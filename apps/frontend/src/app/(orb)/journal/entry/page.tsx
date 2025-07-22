@@ -4,7 +4,6 @@ import CameraEntry from "@/components/journal-entry/CameraEntry";
 import { withAuth } from "@/components/with-auth";
 import { useAuth } from "@/context/auth-context";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -14,6 +13,8 @@ import SubmitButton from "@/components/v0/SubmitButton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import InputToolbar from "@/components/journal-entry/InputToolbar";
 import JournalEntryComposer from "@/components/journal-entry/JournalEntryComposer";
+import { motion } from "framer-motion";
+import OrganicSphere from "@/components/sphere/OrganicSphere";
 
 const JournalEntryPage = () => {
   const { token } = useAuth();
@@ -255,37 +256,51 @@ const JournalEntryPage = () => {
 
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
-      <Header
-        leftContent={
-          <Link href="/" className="flex items-center">
-            <ChevronLeftIcon className="h-8 w-8 text-black" />
-            <span className="ml-2 text-2xl font-bold">Journal</span>
-          </Link>
-        }
-        rightContent={<FeedbackButton />}
-      />
-      <main className="p-6 flex flex-col items-center flex-grow pb-32">
-        <JournalEntryComposer text={text} setText={setText} />
-      </main>
-      <footer
-        ref={footerRef}
-        className="fixed bottom-0 left-0 right-0 p-6 flex justify-between items-center"
-        style={{ transform: "translateZ(0)" }}
-      >
-        <InputToolbar
-          onCameraClick={handleCameraClick}
-          onVoiceClick={handleMicClick}
-          onDocumentClick={handleDocumentClick}
-          isRecording={isRecording}
+      <div>
+        <Header
+          leftContent={
+            <button onClick={() => router.back()} className="flex items-center">
+              <ChevronLeftIcon className="h-8 w-8 text-black" />
+              <span className="ml-2 text-2xl font-bold">Journal</span>
+            </button>
+          }
+          rightContent={<FeedbackButton />}
         />
-        {hasContent && (
-          <div>
-            <SubmitButton onClick={handleTextSubmit} disabled={isLoading}>
-              {isLoading ? "SUBMITTING..." : "SUBMIT"}
-            </SubmitButton>
-          </div>
-        )}
-      </footer>
+      </div>
+      <main className="p-6 flex flex-col items-center flex-grow pb-32">
+        <motion.div
+          layoutId="orb"
+          className="w-64 h-64 relative"
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          animate={{ scale: 0.5625 }}
+        >
+          <OrganicSphere />
+        </motion.div>
+        <div className="w-full">
+          <JournalEntryComposer text={text} setText={setText} />
+        </div>
+      </main>
+      <div>
+        <footer
+          ref={footerRef}
+          className="fixed bottom-0 left-0 right-0 p-6 flex justify-between items-center"
+          style={{ transform: "translateZ(0)" }}
+        >
+          <InputToolbar
+            onCameraClick={handleCameraClick}
+            onVoiceClick={handleMicClick}
+            onDocumentClick={handleDocumentClick}
+            isRecording={isRecording}
+          />
+          {hasContent && (
+            <div>
+              <SubmitButton onClick={handleTextSubmit} disabled={isLoading}>
+                {isLoading ? "SUBMITTING..." : "SUBMIT"}
+              </SubmitButton>
+            </div>
+          )}
+        </footer>
+      </div>
       <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
         <DialogContent className="max-w-full h-full flex items-center justify-center">
           <CameraEntry
