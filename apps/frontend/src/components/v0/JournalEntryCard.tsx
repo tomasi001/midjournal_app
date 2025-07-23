@@ -2,6 +2,10 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePalette } from "color-thief-react";
+import {
+  ArrowsPointingOutIcon,
+  ArrowUpOnSquareIcon,
+} from "@heroicons/react/24/outline";
 
 interface JournalEntryCardProps {
   entryId: string;
@@ -9,7 +13,7 @@ interface JournalEntryCardProps {
   entryNumber?: number;
   title?: string;
   date?: string;
-  size?: "default" | "small";
+  size?: "default" | "small" | "large";
 }
 
 const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
@@ -38,15 +42,28 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
       : "linear-gradient(to right, #d1fae5, #10b981)";
 
   const isSmall = size === "small";
+  const isLarge = size === "large";
+
+  const href = isLarge
+    ? `/journal/${entryId}/insights`
+    : `/journal/${entryId}/result`;
 
   return (
     <Link
-      href={`/journal/${entryId}/result`}
-      className={`block w-full overflow-hidden shadow-lg group ${
-        isSmall ? "rounded-md bg-stone-50" : "rounded-2xl bg-white"
+      href={href}
+      className={`block w-full overflow-hidden group ${
+        isSmall
+          ? "rounded-md bg-stone-50 shadow-lg"
+          : isLarge
+          ? "rounded-lg bg-stone-50 shadow-xl"
+          : "rounded-2xl bg-white shadow-lg"
       }`}
     >
-      <div className="relative w-full aspect-square">
+      <div
+        className={`relative w-full ${
+          isLarge ? "aspect-[330/497]" : "aspect-square"
+        }`}
+      >
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -71,25 +88,33 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
 
       <div className="relative">
         <div
-          className={`${isSmall ? "h-1" : "h-1.5"}`}
+          className={`${isSmall || isLarge ? "h-1" : "h-1.5"}`}
           style={{
             background: gradient,
           }}
         />
         <div
           className={`absolute left-1/2 -translate-x-1/2 rounded-full ${
-            isSmall ? "-top-3 w-7 h-7 p-0.5" : "-top-6 w-12 h-12 p-0.75"
+            isSmall
+              ? "-top-3 w-7 h-7 p-0.5"
+              : isLarge
+              ? "-top-9 w-[74px] h-[70px] p-1"
+              : "-top-6 w-12 h-12 p-0.75"
           }`}
           style={{ background: gradient }}
         >
           <div
             className={`w-full h-full rounded-full flex items-center justify-center ${
-              isSmall ? "bg-stone-50" : "bg-white"
+              isSmall || isLarge ? "bg-stone-50" : "bg-white"
             }`}
           >
             <span
-              className={`font-normal text-gray-700 ${
-                isSmall ? "text-[12px]" : "text-xl"
+              className={`text-gray-700 ${
+                isSmall
+                  ? "text-[12px] font-normal"
+                  : isLarge
+                  ? "text-[26px] font-normal"
+                  : "text-xl font-bold"
               }`}
             >
               {entryNumber}
@@ -99,25 +124,42 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
 
         <div
           className={`text-center ${
-            isSmall ? "bg-stone-50 px-2 pt-4 pb-2" : "bg-white px-4 pt-8 pb-4"
+            isSmall
+              ? "bg-stone-50 px-2 pt-4 pb-2"
+              : isLarge
+              ? "bg-stone-50 px-4 pt-12 pb-4"
+              : "bg-white px-4 pt-8 pb-4"
           }`}
         >
           <h3
             className={`truncate ${
               isSmall
                 ? "text-xs font-normal text-gray-800"
+                : isLarge
+                ? "text-base font-normal text-gray-800"
                 : "text-lg font-semibold text-gray-800"
             }`}
           >
-            {title || "Untitled"}
+            &quot;{title || "Untitled"}&quot;
           </h3>
           <p
             className={`mt-1 ${
-              isSmall ? "text-[10px] text-gray-500" : "text-sm text-gray-500"
+              isSmall
+                ? "text-[10px] text-gray-500"
+                : isLarge
+                ? "text-[13px] text-gray-500"
+                : "text-sm text-gray-500"
             }`}
           >
             {formattedDate}
           </p>
+          {/* {isLarge && title && (
+            <div className="flex justify-between items-center text-sm text-gray-400 mt-4 px-2">
+              <ArrowsPointingOutIcon className="h-6 w-6" />
+              <span className="tracking-widest">TAP CARD FOR INSIGHTS</span>
+              <ArrowUpOnSquareIcon className="h-6 w-6" />
+            </div>
+          )} */}
         </div>
       </div>
     </Link>

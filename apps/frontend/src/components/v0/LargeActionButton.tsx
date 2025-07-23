@@ -12,7 +12,7 @@ const LargeActionButton: React.FC<LargeActionButtonProps> = ({
   return (
     <Button
       {...props}
-      className="w-full bg-black text-white text-lg font-bold py-6 rounded-full hover:bg-gray-800 disabled:bg-gray-400"
+      className="w-full bg-[#333333] text-[#F9F9F9] text-lg font-bold py-6 rounded-[5px] hover:bg-gray-800 disabled:bg-gray-400"
     >
       {children}
     </Button>
