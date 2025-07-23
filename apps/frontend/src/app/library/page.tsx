@@ -64,6 +64,8 @@ const JournalLibraryPage = () => {
                   entryId={entry.id}
                   imageUrl={entry.image_url}
                   entryNumber={entry.entry_number}
+                  title={entry.title}
+                  date={entry.created_at}
                 />
               ))}
               onLoadMore={loadMoreEntries}

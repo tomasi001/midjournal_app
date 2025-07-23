@@ -270,13 +270,12 @@ const JournalEntryPage = () => {
       <main className="p-6 flex flex-col items-center flex-grow pb-32">
         <motion.div
           layoutId="orb"
-          className="w-64 h-64 relative"
+          className="w-36 h-36 relative"
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          animate={{ scale: 0.5625 }}
         >
           <OrganicSphere />
         </motion.div>
-        <div className="w-full">
+        <div className="w-full flex-grow flex">
           <JournalEntryComposer text={text} setText={setText} />
         </div>
       </main>

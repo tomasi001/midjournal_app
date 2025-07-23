@@ -14,6 +14,8 @@ export interface JournalEntry {
   id: string;
   entry_number: number;
   image_url: string;
+  title: string;
+  created_at: string;
 }
 
 interface JournalEntriesContextType {

@@ -1,19 +1,28 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/v0/Header";
 import { SparklesIcon, UserCircleIcon } from "@heroicons/react/24/solid";
-import { ChevronRightIcon } from "@heroicons/react/24/outline";
 import { withAuth } from "@/components/with-auth";
 import { useJournalEntries } from "@/context/journal-entries-context";
-import Image from "next/image";
-import Iridescence from "@/components/ui/Iridescence";
 import OrganicSphere from "@/components/sphere/OrganicSphere";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/auth-context";
+import AnimatedList from "@/components/AnimatedList";
+import JournalEntryCard from "@/components/v0/JournalEntryCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const HomePage = () => {
-  const { latestEntry } = useJournalEntries();
+  const { entries, loading, hasMore, loadMoreEntries, refreshEntries } =
+    useJournalEntries();
+  const { token } = useAuth();
+
+  useEffect(() => {
+    if (token) {
+      refreshEntries();
+    }
+  }, [token, refreshEntries]);
 
   return (
     <div className="bg-white text-black min-h-screen">
@@ -29,7 +38,7 @@ const HomePage = () => {
           }
         />
       </div>
-      <main className="pb-6 px-6 flex flex-col items-center">
+      <main className="pb-6 px-4 flex flex-col items-center">
         <div className="w-full relative z-10">
           <div className="relative">
             <input
@@ -67,42 +76,64 @@ const HomePage = () => {
         </div>
 
         <div className="w-full mt-8">
-          <div className="flex justify-between items-center">
-            <Link href="/library">
-              <h3 className="text-xl font-semibold">Library</h3>
-            </Link>
-            <Link href="/library">
-              <ChevronRightIcon className="h-6 w-6 text-gray-400" />
-            </Link>
-          </div>
-          <Link href="/library">
-            <div className="bg-gray-100 h-48 rounded-lg mt-2 relative overflow-hidden">
-              {latestEntry && latestEntry.image_url ? (
-                <Image
-                  src={latestEntry.image_url}
-                  alt="Latest journal entry"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-lg"
+          <Tabs defaultValue="journals" className="w-full flex flex-col">
+            <TabsList className="bg-white rounded-lg">
+              {/* <TabsTrigger
+                value="most-recent"
+                className="data-[state=active]:bg-gray-200 data-[state=active]:shadow-sm text-gray-400 data-[state=active]:text-gray-700 rounded-md"
+              >
+                Most recent
+              </TabsTrigger> */}
+              <TabsTrigger
+                value="journals"
+                className="data-[state=active]:bg-gray-200 data-[state=active]:shadow-sm text-gray-400 data-[state=active]:text-gray-700 rounded-md"
+              >
+                Journals
+              </TabsTrigger>
+              <TabsTrigger
+                value="notes"
+                className="data-[state=active]:bg-gray-200 data-[state=active]:shadow-sm text-gray-400 data-[state=active]:text-gray-700 rounded-md"
+              >
+                Notes
+              </TabsTrigger>
+            </TabsList>
+            {/* <TabsContent value="most-recent" className="w-full pt-6">
+              <div className="text-center py-10">
+                <p className="text-gray-500">No recent items to show.</p>
+              </div>
+            </TabsContent> */}
+            <TabsContent value="journals" className="w-full">
+              {entries.length > 0 ? (
+                <AnimatedList
+                  listClassName="grid grid-cols-3 gap-2"
+                  displayScrollbar={false}
+                  items={entries.map((entry) => (
+                    <JournalEntryCard
+                      key={entry.id}
+                      entryId={entry.id}
+                      imageUrl={entry.image_url}
+                      entryNumber={entry.entry_number}
+                      title={entry.title}
+                      date={entry.created_at}
+                      size="small"
+                    />
+                  ))}
+                  onLoadMore={loadMoreEntries}
+                  isLoading={loading}
+                  hasMore={hasMore}
                 />
+              ) : loading ? (
+                <p>Loading entries...</p>
               ) : (
-                <Iridescence />
+                <p>No entries found.</p>
               )}
-            </div>
-          </Link>
-        </div>
-        <div className="w-full mt-12">
-          <div className="flex justify-between items-center">
-            <Link href="/patterns">
-              <h3 className="text-xl font-semibold">Patterns</h3>
-            </Link>
-            <Link href="/patterns">
-              <ChevronRightIcon className="h-6 w-6 text-gray-400" />
-            </Link>
-          </div>
-          <Link href="/patterns">
-            <div className="bg-gray-100 h-48 rounded-lg mt-2"></div>
-          </Link>
+            </TabsContent>
+            <TabsContent value="notes" className="w-full pt-6">
+              <div className="text-center py-10">
+                <p className="text-gray-500">No notes yet.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>

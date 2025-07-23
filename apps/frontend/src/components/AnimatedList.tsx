@@ -66,7 +66,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   itemClassName = "",
   displayScrollbar = true,
   initialSelectedIndex = -1,
-  listClassName = "",
+  listClassName = "grid grid-cols-2 gap-4",
   onLoadMore,
   isLoading,
   hasMore,
