@@ -1,11 +1,7 @@
-import React from "react";
+import { usePalette } from "color-thief-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePalette } from "color-thief-react";
-import {
-  ArrowsPointingOutIcon,
-  ArrowUpOnSquareIcon,
-} from "@heroicons/react/24/outline";
+import React from "react";
 
 interface JournalEntryCardProps {
   entryId: string;
@@ -13,7 +9,8 @@ interface JournalEntryCardProps {
   entryNumber?: number;
   title?: string;
   date?: string;
-  size?: "default" | "small" | "large";
+  size?: "default" | "small" | "large" | "share";
+  palette?: string[] | null;
 }
 
 const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
@@ -23,10 +20,17 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   title,
   date,
   size = "default",
+  palette: paletteProp,
 }) => {
-  const { data: palette } = usePalette(imageUrl || "", 2, "hex", {
-    crossOrigin: "anonymous",
-  });
+  const { data: paletteFromHook } = usePalette(
+    paletteProp ? "" : imageUrl || "",
+    2,
+    "hex",
+    {
+      crossOrigin: "anonymous",
+    }
+  );
+  const palette = paletteProp || paletteFromHook;
 
   const formattedDate = date
     ? new Date(date).toLocaleDateString("en-GB", {
@@ -43,6 +47,7 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
 
   const isSmall = size === "small";
   const isLarge = size === "large";
+  const isShare = size === "share";
 
   const href = isLarge
     ? `/journal/${entryId}/insights`
@@ -52,7 +57,9 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
     <Link
       href={href}
       className={`block w-full overflow-hidden group ${
-        isSmall
+        isShare
+          ? "rounded bg-stone-50 shadow-md"
+          : isSmall
           ? "rounded-md bg-stone-50 shadow-lg"
           : isLarge
           ? "rounded-lg bg-stone-50 shadow-xl"
@@ -61,7 +68,7 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
     >
       <div
         className={`relative w-full ${
-          isLarge ? "aspect-[330/497]" : "aspect-square"
+          isLarge || isShare ? "aspect-[330/497]" : "aspect-square"
         }`}
       >
         {imageUrl ? (
@@ -88,14 +95,18 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
 
       <div className="relative">
         <div
-          className={`${isSmall || isLarge ? "h-1" : "h-1.5"}`}
+          className={`${
+            isShare ? "h-0.5" : isSmall || isLarge ? "h-1" : "h-1.5"
+          }`}
           style={{
             background: gradient,
           }}
         />
         <div
           className={`absolute left-1/2 -translate-x-1/2 rounded-full ${
-            isSmall
+            isShare
+              ? "-top-2 w-5 h-5 p-0.5"
+              : isSmall
               ? "-top-3 w-7 h-7 p-0.5"
               : isLarge
               ? "-top-9 w-[74px] h-[70px] p-1"
@@ -105,12 +116,14 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
         >
           <div
             className={`w-full h-full rounded-full flex items-center justify-center ${
-              isSmall || isLarge ? "bg-stone-50" : "bg-white"
+              isShare || isSmall || isLarge ? "bg-stone-50" : "bg-white"
             }`}
           >
             <span
               className={`text-gray-700 ${
-                isSmall
+                isShare
+                  ? "text-[10px] font-normal"
+                  : isSmall
                   ? "text-[12px] font-normal"
                   : isLarge
                   ? "text-[26px] font-normal"
@@ -124,7 +137,9 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
 
         <div
           className={`text-center ${
-            isSmall
+            isShare
+              ? "bg-stone-50 px-1 pt-3 pb-1"
+              : isSmall
               ? "bg-stone-50 px-2 pt-4 pb-2"
               : isLarge
               ? "bg-stone-50 px-4 pt-12 pb-4"
@@ -133,7 +148,9 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
         >
           <h3
             className={`truncate ${
-              isSmall
+              isShare
+                ? "text-[10px] font-normal text-gray-800"
+                : isSmall
                 ? "text-xs font-normal text-gray-800"
                 : isLarge
                 ? "text-base font-normal text-gray-800"
@@ -144,7 +161,9 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
           </h3>
           <p
             className={`mt-1 ${
-              isSmall
+              isShare
+                ? "text-[8px] text-gray-500"
+                : isSmall
                 ? "text-[10px] text-gray-500"
                 : isLarge
                 ? "text-[13px] text-gray-500"
@@ -153,13 +172,6 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
           >
             {formattedDate}
           </p>
-          {/* {isLarge && title && (
-            <div className="flex justify-between items-center text-sm text-gray-400 mt-4 px-2">
-              <ArrowsPointingOutIcon className="h-6 w-6" />
-              <span className="tracking-widest">TAP CARD FOR INSIGHTS</span>
-              <ArrowUpOnSquareIcon className="h-6 w-6" />
-            </div>
-          )} */}
         </div>
       </div>
     </Link>

@@ -7,8 +7,13 @@ import { useAuth } from "@/context/auth-context";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { Share } from "lucide-react";
 import { withAuth } from "@/components/with-auth";
+import ShareSheet from "@/components/ShareSheet";
 
 interface JournalEntry {
+  id: string;
+  entry_number: number;
+  title: string | null;
+  created_at: string;
   image_url: string | null;
 }
 
@@ -85,7 +90,11 @@ const FullScreenImagePage = () => {
         <Link href={`/journal/${entryId}/result`}>
           <ArrowLeftIcon className="h-6 w-6 text-black" />
         </Link>
-        <Share className="h-6 w-6 text-black" />
+        {entry && (
+          <ShareSheet entry={entry}>
+            <Share className="h-6 w-6 text-black cursor-pointer" />
+          </ShareSheet>
+        )}
       </header>
     </div>
   );

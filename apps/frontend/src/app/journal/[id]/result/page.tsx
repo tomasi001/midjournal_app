@@ -11,6 +11,7 @@ import { withAuth } from "@/components/with-auth";
 import { useAuth } from "@/context/auth-context";
 import JournalEntryCard from "@/components/v0/JournalEntryCard";
 import { Scan, Share } from "lucide-react";
+import ShareSheet from "@/components/ShareSheet";
 
 interface JournalEntry {
   id: string;
@@ -111,7 +112,7 @@ const JournalResultPage = () => {
     <div className="bg-white text-black min-h-screen flex flex-col">
       <Header
         leftContent={
-          <Link href="/library" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <ArrowLeftIcon className="h-6 w-6 text-black" />
             {/* <h1 className="text-2xl font-bold">Entry {entryNumber}</h1> */}
           </Link>
@@ -122,7 +123,11 @@ const JournalResultPage = () => {
             <Link href={`/journal/${entryId}/result/full`}>
               <Scan className="h-5 w-5 text-black" />
             </Link>
-            <Share className="h-5 w-5 text-black" />
+            {entry && (
+              <ShareSheet entry={entry}>
+                <Share className="h-5 w-5 text-black cursor-pointer" />
+              </ShareSheet>
+            )}
           </div>
         }
       />
