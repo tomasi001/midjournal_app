@@ -107,8 +107,6 @@ const JournalResultPage = () => {
     );
   }
 
-  const entryNumber = entry.entry_number;
-
   return (
     <div className="bg-white text-black min-h-screen flex flex-col">
       <Header
@@ -121,7 +119,9 @@ const JournalResultPage = () => {
         rightContent={
           <div className="flex items-center gap-2">
             <FeedbackButton />
-            <Scan className="h-5 w-5 text-black" />
+            <Link href={`/journal/${entryId}/result/full`}>
+              <Scan className="h-5 w-5 text-black" />
+            </Link>
             <Share className="h-5 w-5 text-black" />
           </div>
         }
