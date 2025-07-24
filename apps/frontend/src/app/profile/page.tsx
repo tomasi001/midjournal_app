@@ -5,6 +5,7 @@ import SignOutButton from "@/components/v0/SignOutButton";
 import { withAuth } from "@/components/with-auth";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { PwaManager } from "@/components/pwa/PwaManager";
 
 const ProfilePage = () => {
   return (
@@ -22,7 +23,9 @@ const ProfilePage = () => {
           </div>
         }
       />
-      <main className="p-6"></main>
+      <main className="p-6">
+        <PwaManager mode="inline" />
+      </main>
     </div>
   );
 };

@@ -273,7 +273,7 @@ const JournalEntryPage = () => {
           className="w-36 h-36 relative"
           transition={{ duration: 0.5, ease: "easeInOut" }}
         >
-          <OrganicSphere />
+          {/* <OrganicSphere /> */}
         </motion.div>
         <div className="w-full flex-grow flex">
           <JournalEntryComposer text={text} setText={setText} />

@@ -12,6 +12,7 @@ import { useAuth } from "@/context/auth-context";
 import AnimatedList from "@/components/AnimatedList";
 import JournalEntryCard from "@/components/v0/JournalEntryCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PwaManager } from "@/components/pwa/PwaManager";
 
 const HomePage = () => {
   const { entries, loading, hasMore, loadMoreEntries, refreshEntries } =
@@ -26,6 +27,7 @@ const HomePage = () => {
 
   return (
     <div className="bg-white text-black min-h-screen">
+      <PwaManager mode="dialog" />
       <div>
         <Header
           leftContent={
@@ -57,7 +59,7 @@ const HomePage = () => {
             animate={{ scale: 1 }}
           >
             <Link href="/journal/entry" className="mt-12">
-              <OrganicSphere />
+              {/* <OrganicSphere /> */}
             </Link>
           </motion.div>
           <div className="text-gray-500">
@@ -69,6 +71,7 @@ const HomePage = () => {
         <div className="w-full mt-4">
           <Link href="/journal/entry" className="mt-12">
             <textarea
+              disabled
               placeholder="Or write what's on your mind here..."
               className="w-full border-1 border-gray-300 text-gray rounded-2xl p-4 text-md focus:outline-none focus:ring-2 focus:ring-gray-300 h-32"
             />
