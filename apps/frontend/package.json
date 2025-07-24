@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:vercel": "next build --experimental-tsconfig-path tsconfig.vercel.json",
     "start": "next start",
     "lint": "next lint"
   },
