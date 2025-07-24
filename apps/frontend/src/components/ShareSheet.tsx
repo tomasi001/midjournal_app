@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/drawer";
 import JournalEntryCard from "./v0/JournalEntryCard";
 import { Button } from "./ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 import { LinkIcon } from "lucide-react";
 import InstagramIcon from "./icons/InstagramIcon";
 import WhatsappIcon from "./icons/WhatsappIcon";
