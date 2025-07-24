@@ -42,14 +42,17 @@ const HomePage = () => {
       </div>
       <main className="pb-6 px-4 flex flex-col items-center">
         <div className="w-full relative z-10">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search or ask something..."
-              className="w-full border-1 border-gray-300 rounded-full py-2 pl-5 pr-12 text-md focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-            <SparklesIcon className="absolute right-4 top-1/2 -translate-y-1/2 h-7 w-7 text-black" />
-          </div>
+          <Link href="/mind-search">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search or ask something..."
+                className="w-full border-1 border-gray-300 rounded-full py-2 pl-5 pr-12 text-md focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer"
+                readOnly
+              />
+              <SparklesIcon className="absolute right-4 top-1/2 -translate-y-1/2 h-7 w-7 text-black" />
+            </div>
+          </Link>
         </div>
         <div className="flex flex-col items-center text-center">
           <motion.div

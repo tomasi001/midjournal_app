@@ -17,6 +17,7 @@ import { LinkIcon } from "lucide-react";
 import InstagramIcon from "./icons/InstagramIcon";
 import WhatsappIcon from "./icons/WhatsappIcon";
 import TiktokIcon from "./icons/TiktokIcon";
+import Image from "next/image";
 
 interface ShareSheetProps {
   children: React.ReactNode;
@@ -234,9 +235,11 @@ const ShareSheet: React.FC<ShareSheetProps> = ({ children, entry }) => {
                 />
               </div>
             ) : (
-              <img
+              <Image
                 src={entry.image_url!}
                 alt="Journal Entry"
+                width={224}
+                height={372}
                 className="w-56 h-[372px] rounded-lg object-cover"
               />
             )}
@@ -293,9 +296,11 @@ const ShareSheet: React.FC<ShareSheetProps> = ({ children, entry }) => {
                 setShareMode("image");
               }}
             >
-              <img
-                src={entry.image_url ?? undefined}
+              <Image
+                src={entry.image_url ?? ""}
                 alt="Original"
+                width={56}
+                height={56}
                 className="w-full h-full rounded-full object-cover"
               />
             </Button>

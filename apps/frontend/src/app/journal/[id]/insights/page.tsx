@@ -3,7 +3,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Iridescence from "@/components/ui/Iridescence";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import FeedbackButton from "@/components/v0/FeedbackButton";
 import Header from "@/components/v0/Header";
 import LargeActionButton from "@/components/v0/LargeActionButton";
@@ -106,7 +105,7 @@ const JournalInsightsPage = () => {
     if (entryId) {
       fetchEntry();
     }
-  }, [entryId, token]);
+  }, [entry, entryId, token]);
 
   useEffect(() => {
     if (!entry || entry.emotional_landscape) {
@@ -142,7 +141,7 @@ const JournalInsightsPage = () => {
 
   return (
     <div className="relative bg-black text-white min-h-screen flex flex-col">
-      <div className="absolute top-0 left-0 w-full h-full z-0">
+      <div className="fixed top-0 left-0 w-full h-screen z-0">
         {entry?.image_url ? (
           <Image
             src={entry.image_url}
@@ -173,157 +172,152 @@ const JournalInsightsPage = () => {
         />
         <main className="p-6 flex-grow">
           {insightsReady ? (
-            <ScrollArea className="h-full">
-              <div className="space-y-6">
-                {entry.summary && (
-                  <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-                    <CardHeader>
-                      <CardTitle className="text-white text-2xl font-bold">
-                        Summary
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-lg italic text-white">
-                        &quot;{entry.summary}&quot;
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
+            <div className="space-y-6">
+              {entry.summary && (
+                <Card className="bg-white/10 backdrop-blur-md border border-white/20">
+                  <CardHeader>
+                    <CardTitle className="text-white text-2xl font-bold">
+                      Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-lg italic text-white">
+                      &quot;{entry.summary}&quot;
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
-                {entry.emotional_landscape && (
-                  <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-                    <CardHeader>
-                      <CardTitle className="text-white text-2xl font-bold">
-                        Emotional Landscape
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <h4 className="text-white text-lg font-semibold">
-                          Dominant Emotions:
-                        </h4>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {entry.emotional_landscape.dominant_emotions.map(
-                            (e, i) => (
-                              <Badge key={i}>
-                                {e.emotion} ({Number(e.intensity).toFixed(1)})
-                              </Badge>
-                            )
-                          )}
-                        </div>
+              {entry.emotional_landscape && (
+                <Card className="bg-white/10 backdrop-blur-md border border-white/20">
+                  <CardHeader>
+                    <CardTitle className="text-white text-2xl font-bold">
+                      Emotional Landscape
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="text-white text-lg font-semibold">
+                        Dominant Emotions:
+                      </h4>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {entry.emotional_landscape.dominant_emotions.map(
+                          (e, i) => (
+                            <Badge key={i}>
+                              {e.emotion} ({Number(e.intensity).toFixed(1)})
+                            </Badge>
+                          )
+                        )}
                       </div>
-                      <p className="text-white text-lg">
-                        <span className="text-white text-lg font-semibold">
-                          Valence:
-                        </span>{" "}
-                        {entry.emotional_landscape.emotional_valence}
-                      </p>
-                      <div>
-                        <h4 className="text-white text-lg font-semibold">
-                          Shifts:
-                        </h4>
-                        <ul className="list-disc list-inside text-white">
-                          {entry.emotional_landscape.emotional_shifts.map(
-                            (s, i) => (
-                              <li key={i}>{s}</li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    </div>
+                    <p className="text-white text-lg">
+                      <span className="text-white text-lg font-semibold">
+                        Valence:
+                      </span>{" "}
+                      {entry.emotional_landscape.emotional_valence}
+                    </p>
+                    <div>
+                      <h4 className="text-white text-lg font-semibold">
+                        Shifts:
+                      </h4>
+                      <ul className="list-disc list-inside text-white">
+                        {entry.emotional_landscape.emotional_shifts.map(
+                          (s, i) => (
+                            <li key={i}>{s}</li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-                {entry.themes_topics && (
+              {entry.themes_topics && (
+                <Card className="bg-white/10 backdrop-blur-md border border-white/20">
+                  <CardHeader>
+                    <CardTitle className="text-white text-2xl font-bold">
+                      Themes & Topics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {entry.themes_topics.identified_themes.map((t, i) => (
+                        <Badge key={i}>{t}</Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {entry.cognitive_patterns && (
+                <Card className="bg-white/10 backdrop-blur-md border border-white/20">
+                  <CardHeader>
+                    <CardTitle className="text-white text-2xl font-bold">
+                      Cognitive Patterns
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className="text-white">
+                      <span className="text-white text-lg font-semibold">
+                        Self-Perception:
+                      </span>{" "}
+                      {entry.cognitive_patterns.self_perception}
+                    </p>
+                    <div>
+                      <h4 className="text-white text-lg font-semibold">
+                        Recurring Thoughts:
+                      </h4>
+                      <ul className="list-disc list-inside text-white">
+                        {entry.cognitive_patterns.recurring_thoughts.map(
+                          (t, i) => (
+                            <li key={i}>{t}</li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {entry.relational_dynamics &&
+                entry.relational_dynamics.mentioned_individuals.length > 0 && (
                   <Card className="bg-white/10 backdrop-blur-md border border-white/20">
                     <CardHeader>
                       <CardTitle className="text-white text-2xl font-bold">
-                        Themes & Topics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {entry.themes_topics.identified_themes.map((t, i) => (
-                          <Badge key={i}>{t}</Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {entry.cognitive_patterns && (
-                  <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-                    <CardHeader>
-                      <CardTitle className="text-white text-2xl font-bold">
-                        Cognitive Patterns
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <p className="text-white">
-                        <span className="text-white text-lg font-semibold">
-                          Self-Perception:
-                        </span>{" "}
-                        {entry.cognitive_patterns.self_perception}
-                      </p>
-                      <div>
-                        <h4 className="text-white text-lg font-semibold">
-                          Recurring Thoughts:
-                        </h4>
-                        <ul className="list-disc list-inside text-white">
-                          {entry.cognitive_patterns.recurring_thoughts.map(
-                            (t, i) => (
-                              <li key={i}>{t}</li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {entry.relational_dynamics &&
-                  entry.relational_dynamics.mentioned_individuals.length >
-                    0 && (
-                    <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-                      <CardHeader>
-                        <CardTitle className="text-white text-2xl font-bold">
-                          Relational Dynamics
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="list-disc list-inside text-white">
-                          {entry.relational_dynamics.mentioned_individuals.map(
-                            (p, i) => (
-                              <li key={i}>
-                                {p.name} ({p.relationship}) - {p.sentiment}
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                {entry.contextual_clues && (
-                  <Card className="bg-white/10 backdrop-blur-md border border-white/20">
-                    <CardHeader>
-                      <CardTitle className="text-white text-2xl font-bold">
-                        Contextual Clues
+                        Relational Dynamics
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="list-disc list-inside text-white">
-                        {entry.contextual_clues.events_situations.map(
-                          (e, i) => (
-                            <li key={i}>{e}</li>
+                        {entry.relational_dynamics.mentioned_individuals.map(
+                          (p, i) => (
+                            <li key={i}>
+                              {p.name} ({p.relationship}) - {p.sentiment}
+                            </li>
                           )
                         )}
                       </ul>
                     </CardContent>
                   </Card>
                 )}
-              </div>
-            </ScrollArea>
+
+              {entry.contextual_clues && (
+                <Card className="bg-white/10 backdrop-blur-md border border-white/20">
+                  <CardHeader>
+                    <CardTitle className="text-white text-2xl font-bold">
+                      Contextual Clues
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="list-disc list-inside text-white">
+                      {entry.contextual_clues.events_situations.map((e, i) => (
+                        <li key={i}>{e}</li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           ) : (
             <div className="flex justify-center items-center h-full">
               <Card className="bg-white/10 backdrop-blur-md border border-white/20">

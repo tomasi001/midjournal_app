@@ -1,9 +1,8 @@
-import * as THREE from "three";
 import Experience from "./Experience.js";
 import Sphere from "./Sphere.js";
 
 export default class World {
-  constructor(_options) {
+  constructor() {
     this.experience = new Experience();
     this.config = this.experience.config;
     this.scene = this.experience.scene;

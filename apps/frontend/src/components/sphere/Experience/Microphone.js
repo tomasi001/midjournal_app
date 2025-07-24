@@ -66,7 +66,7 @@ export default class Microphone {
       );
 
       for (let i = 0; i < this.analyserNode.fftSize; i++) {
-        const floatTimeDomainValue = this.floatTimeDomainData[i];
+        // const floatTimeDomainValue = this.floatTimeDomainData[i];
         const byteFrequencyValue = this.byteFrequencyData[i];
         const normalizeByteFrequencyValue = byteFrequencyValue / 255;
 

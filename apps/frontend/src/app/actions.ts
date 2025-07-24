@@ -1,6 +1,6 @@
 "use server";
 
-import webpush from "web-push";
+import webpush, { type PushSubscription } from "web-push";
 
 webpush.setVapidDetails(
   "mailto:test@example.com",
