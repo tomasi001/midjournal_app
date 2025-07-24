@@ -59,7 +59,7 @@ const HomePage = () => {
             animate={{ scale: 1 }}
           >
             <Link href="/journal/entry" className="mt-12">
-              {/* <OrganicSphere /> */}
+              <OrganicSphere />
             </Link>
           </motion.div>
           <div className="text-gray-500">
@@ -70,11 +70,11 @@ const HomePage = () => {
 
         <div className="w-full mt-4">
           <Link href="/journal/entry" className="mt-12">
-            <textarea
-              disabled
-              placeholder="Or write what's on your mind here..."
-              className="w-full border-1 border-gray-300 text-gray rounded-2xl p-4 text-md focus:outline-none focus:ring-2 focus:ring-gray-300 h-32"
-            />
+            <div className="w-full border-1 border-gray-300 text-gray rounded-2xl p-4 text-md focus:outline-none focus:ring-2 focus:ring-gray-300 h-32">
+              <p className="text-gray-500">
+                Or write what&apos;s on your mind here...
+              </p>
+            </div>
           </Link>
         </div>
 
