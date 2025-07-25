@@ -218,7 +218,7 @@ export default class Sphere {
   }
 
   setGeometry() {
-    this.geometry = new THREE.SphereGeometry(0.75, 256, 256);
+    this.geometry = new THREE.SphereGeometry(1, 128, 128);
     this.geometry.computeTangents();
   }
 
