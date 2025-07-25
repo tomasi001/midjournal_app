@@ -13,7 +13,7 @@ import SubmitButton from "@/components/v0/SubmitButton";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import InputToolbar from "@/components/journal-entry/InputToolbar";
 import JournalEntryComposer from "@/components/journal-entry/JournalEntryComposer";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
 import OrganicSphere from "@/components/sphere/OrganicSphere";
 
 const JournalEntryPage = () => {
@@ -268,13 +268,13 @@ const JournalEntryPage = () => {
         />
       </div>
       <main className="p-6 flex flex-col items-center flex-grow pb-32">
-        <motion.div
+        {/* <motion.div
           layoutId="orb"
           className="w-36 h-36 relative"
           transition={{ duration: 0.5, ease: "easeInOut" }}
-        >
-          <OrganicSphere />
-        </motion.div>
+        > */}
+        <OrganicSphere />
+        {/* </motion.div> */}
         <div className="w-full flex-grow flex">
           <JournalEntryComposer text={text} setText={setText} />
         </div>

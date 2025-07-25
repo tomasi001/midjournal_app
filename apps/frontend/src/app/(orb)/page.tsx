@@ -7,7 +7,7 @@ import { SparklesIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import { withAuth } from "@/components/with-auth";
 import { useJournalEntries } from "@/context/journal-entries-context";
 import OrganicSphere from "@/components/sphere/OrganicSphere";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
 import { useAuth } from "@/context/auth-context";
 import AnimatedList from "@/components/AnimatedList";
 import JournalEntryCard from "@/components/v0/JournalEntryCard";
@@ -55,16 +55,16 @@ const HomePage = () => {
           </Link>
         </div>
         <div className="flex flex-col items-center text-center">
-          <motion.div
+          {/* <motion.div
             layoutId="orb"
             className="w-64 h-64 relative"
             transition={{ duration: 0.5, ease: "easeInOut" }}
             animate={{ scale: 1 }}
-          >
-            <Link href="/journal/entry" className="mt-12">
-              <OrganicSphere />
-            </Link>
-          </motion.div>
+          > */}
+          <Link href="/journal/entry" className="mt-12">
+            <OrganicSphere />
+          </Link>
+          {/* </motion.div> */}
           <div className="text-gray-500">
             <p>Verbalise your thoughts. Visualise your mind.</p>
             <p>Tap the orb to begin.</p>
