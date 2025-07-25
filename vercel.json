@@ -1,4 +1,13 @@
 {
+  "builds": [
+    {
+      "src": "apps/frontend/package.json",
+      "use": "@vercel/next",
+      "config": {
+        "zeroConfig": true
+      }
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",

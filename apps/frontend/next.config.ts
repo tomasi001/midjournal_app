@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["midjournal.open-apis.org"],
@@ -32,7 +33,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
   async headers() {
     return [
@@ -73,11 +73,13 @@ const nextConfig: NextConfig = {
     ];
   },
   webpack: (config) => {
+    // Add alias for '@' to point to the src directory
+    config.resolve.alias["@"] = path.resolve(__dirname, "src");
+    // Existing GLSL rule
     config.module.rules.push({
       test: /\.(glsl|vs|fs|vert|frag)$/,
       use: ["raw-loader", "glslify-loader"],
     });
-
     return config;
   },
 };
