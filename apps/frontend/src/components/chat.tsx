@@ -77,7 +77,9 @@ export function Chat() {
   const fetchSuggestions = useCallback(async () => {
     if (!token) return;
     try {
-      const response = await fetch("http://localhost:8000/suggestions", {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+      const response = await fetch(`${baseUrl}/suggestions`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
