@@ -4,12 +4,12 @@
     "build": {
       "outputs": [".next/**", "dist/**", "build/**"],
       "dependsOn": ["^build"],
-      "env": ["VAPID_PRIVATE_KEY"]
+      "env": ["VAPID_PRIVATE_KEY", "OLLAMA_MODEL"]
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["OLLAMA_HOST_OVERRIDE"]
+      "passThroughEnv": ["OLLAMA_HOST_OVERRIDE", "OLLAMA_MODEL"]
     },
     "lint": {
       "outputs": []
