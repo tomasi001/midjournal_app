@@ -5,7 +5,16 @@ from starlette.responses import Response
 import time
 
 from src.db.database import create_tables
-from src.api.routers import auth, ingestion, query, tts, journal, suggestions, ocr
+from src.api.routers import (
+    auth,
+    ingestion,
+    query,
+    tts,
+    journal,
+    suggestions,
+    ocr,
+    images,
+)
 from src.api.metrics import REQUEST_COUNT, REQUEST_LATENCY
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
@@ -27,6 +36,8 @@ app = FastAPI(title="MidJournal API", lifespan=lifespan)
 # CORS configuration
 origins = [
     "http://localhost:3000",  # Allow frontend origin
+    "https://midjournal-app.vercel.app",
+    "https://midjournal.open-apis.org",
 ]
 
 app.add_middleware(
@@ -64,6 +75,7 @@ app.include_router(tts.router)
 app.include_router(journal.router)
 app.include_router(suggestions.router)
 app.include_router(ocr.router)
+app.include_router(images.router)
 
 
 @app.get("/")

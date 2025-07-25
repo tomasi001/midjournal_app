@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
         port: "9000",
         pathname: "/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "midjournal.open-apis.org",
+        port: "",
+        pathname: "/images/**",
+      },
     ],
   },
   async rewrites() {

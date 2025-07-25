@@ -22,3 +22,13 @@ class FileStorageService(ABC):
         :return: The public URL of the uploaded file.
         """
         pass
+
+    @abstractmethod
+    def get_file(self, file_name: str) -> tuple[bytes, str] | None:
+        """
+        Retrieves a file from the storage.
+
+        :param file_name: The name of the file to retrieve.
+        :return: A tuple containing the file content as bytes and its content type, or None if not found.
+        """
+        pass

@@ -12,6 +12,8 @@ from src.journal.service import JournalService
 from src.db.database import get_db
 from src.suggestions.service import LLMQuerySuggestionService
 from src.llm.service import OllamaInferenceService
+from src.storage.minio_client import MinIOFileStorageService
+from src.interfaces.file_storage_service import FileStorageService
 
 # --- Singletons ---
 # These instances are created once when the module is first imported.
@@ -32,6 +34,12 @@ def get_text_processing_service() -> TextProcessingService:
 
 def get_vector_store_client() -> QdrantVectorStoreClient:
     return vector_store_singleton
+
+
+def get_file_storage_service() -> FileStorageService:
+    # Initialize the service here instead, so it has access to env vars
+    # loaded by the application.
+    return MinIOFileStorageService()
 
 
 def get_document_ingestion_service():

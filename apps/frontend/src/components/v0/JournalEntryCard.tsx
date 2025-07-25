@@ -22,13 +22,30 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
   size = "default",
   palette: paletteProp,
 }) => {
+  const isSmall = size === "small";
+  const isLarge = size === "large";
+  const isShare = size === "share";
+
+  const href = isLarge
+    ? `/journal/${entryId}/insights`
+    : `/journal/${entryId}/result`;
+
+  const proxiedImageUrl = imageUrl
+    ? imageUrl.replace(
+        "http://localhost:9000/images",
+        `${
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
+        }/images`
+      )
+    : undefined;
+  console.log("imageUrl", imageUrl);
+  console.log("imageUrl.pathname", new URL(imageUrl ?? "").pathname);
+  console.log("proxiedImageUrl", proxiedImageUrl);
+
   const { data: paletteFromHook } = usePalette(
-    paletteProp ? "" : imageUrl || "",
+    paletteProp ? "" : proxiedImageUrl || "",
     2,
-    "hex",
-    {
-      crossOrigin: "anonymous",
-    }
+    "hex"
   );
   const palette = paletteProp || paletteFromHook;
 
@@ -44,14 +61,6 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
     palette && palette.length >= 2
       ? `linear-gradient(to right, ${palette[0]}, ${palette[1]})`
       : "linear-gradient(to right, #d1fae5, #10b981)";
-
-  const isSmall = size === "small";
-  const isLarge = size === "large";
-  const isShare = size === "share";
-
-  const href = isLarge
-    ? `/journal/${entryId}/insights`
-    : `/journal/${entryId}/result`;
 
   return (
     <Link
@@ -71,13 +80,12 @@ const JournalEntryCard: React.FC<JournalEntryCardProps> = ({
           isLarge || isShare ? "aspect-[330/497]" : "aspect-square"
         }`}
       >
-        {imageUrl ? (
+        {proxiedImageUrl ? (
           <Image
-            src={imageUrl}
+            src={proxiedImageUrl}
             alt={title || `Journal Entry ${entryNumber}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
-            crossOrigin="anonymous"
           />
         ) : (
           <div className="w-full h-full bg-gray-100 flex items-center justify-center">

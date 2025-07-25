@@ -13,8 +13,8 @@ log = structlog.get_logger()
 
 class MinIOFileStorageService(FileStorageService):
     def __init__(self):
-        self.minio_url = os.getenv("MINIO_URL", "http://localhost:9000")
-        self.minio_public_url = os.getenv("MINIO_PUBLIC_URL", self.minio_url)
+        self.minio_url = os.getenv("MINIO_URL", "http://minio:9000")
+        self.minio_public_url = os.getenv("MINIO_PUBLIC_URL", "http://localhost:9000")
         self.access_key = os.getenv("MINIO_ACCESS_KEY", "youruser")
         self.secret_key = os.getenv("MINIO_SECRET_KEY", "yourpassword")
         self.bucket_name = os.getenv("MINIO_BUCKET", "images")
@@ -117,3 +117,27 @@ class MinIOFileStorageService(FileStorageService):
         except Exception as e:
             log.error("An unexpected error occurred during file upload", error=e)
             return ""
+
+    def get_file(self, file_name: str) -> tuple[bytes, str] | None:
+        if not self.s3_client:
+            log.error("Cannot get file, S3 client not initialized.")
+            return None
+
+        try:
+            response = self.s3_client.get_object(Bucket=self.bucket_name, Key=file_name)
+            file_content = response["Body"].read()
+            content_type = response.get("ContentType", "application/octet-stream")
+            log.info(f"File '{file_name}' retrieved successfully from MinIO.")
+            return file_content, content_type
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchKey":
+                log.warning(f"File not found in MinIO: {file_name}")
+            else:
+                log.error(f"Failed to get file from MinIO: {file_name}", error=e)
+            return None
+        except Exception as e:
+            log.error(
+                f"An unexpected error occurred during file retrieval: {file_name}",
+                error=e,
+            )
+            return None
