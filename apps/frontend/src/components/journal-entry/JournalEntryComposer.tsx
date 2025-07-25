@@ -17,7 +17,6 @@ const JournalEntryComposer: React.FC<JournalEntryComposerProps> = ({
       onChange={(e) => setText(e.target.value)}
       className="w-full h-full flex-grow bg-white text-black text-lg p-6 focus:outline-none resize-none"
       placeholder="Go deep, understand yourself better..."
-      autoFocus
     />
   );
 };
