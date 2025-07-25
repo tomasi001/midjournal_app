@@ -61,9 +61,11 @@ const HomePage = () => {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             animate={{ scale: 1 }}
           > */}
-          <Link href="/journal/entry" className="mt-12">
-            <OrganicSphere />
-          </Link>
+          <div className="w-64 h-64 relative">
+            <Link href="/journal/entry" className="mt-12">
+              <OrganicSphere />
+            </Link>
+          </div>
           {/* </motion.div> */}
           <div className="text-gray-500">
             <p>Verbalise your thoughts. Visualise your mind.</p>
