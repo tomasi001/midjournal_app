@@ -77,3 +77,9 @@ You can run scripts for a single application by using the `--filter` flag. This 
   ```
 
 <!-- We are triggering a CI RUN -->
+
+### List Directory Structure
+
+```bash
+tree -L 10 -I "node_modules|.turbo|~|.github|**pycache**|.pytest_cache|.ruff_cache|.next|.cursor|venv"
+```
